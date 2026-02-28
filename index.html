@@ -1,603 +1,1360 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YSCode | YallStudioCode</title>
-    <!-- My Own Icon on the site -->
-    <link rel="icon" href="icon.png" type="image/png">
-    <!-- Tailwind for Layout -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Prism.js for Syntax Highlighting -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markdown.min.js"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        :root {
-            --bg-deep: #0a0a0c;
-            --bg-editor: #0d0d0f;
-            --accent: #7c3aed;
-            --glass: rgba(255, 255, 255, 0.03);
-            --border: rgba(255, 255, 255, 0.1);
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YallStudioCode</title>
+<link rel="icon" href="icon.png" type="image/png">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f10;
+    --sidebar-bg: #161618;
+    --tab-bg: #1a1a1c;
+    --editor-bg: #111113;
+    --panel-bg: #141416;
+    --border: #2a2a2e;
+    --accent: #f5a623;
+    --accent2: #e85d4a;
+    --accent3: #4af0a0;
+    --text: #d4d4d8;
+    --text-dim: #71717a;
+    --text-bright: #fafafa;
+    --line-num: #3f3f46;
+    --selection: rgba(245,166,35,0.15);
+    --hover: rgba(255,255,255,0.04);
+    --active: rgba(245,166,35,0.08);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { height:100%; overflow:hidden; }
+  body {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    display:flex;
+    flex-direction:column;
+    height:100vh;
+    user-select:none;
+  }
 
-        body {
-            background-color: var(--bg-deep);
-            color: #e2e8f0;
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
-        }
+  /* TITLE BAR */
+  #titlebar {
+    height: 38px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 12px;
+    flex-shrink: 0;
+    -webkit-app-region: drag;
+  }
+  #titlebar .logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 0.5px;
+  }
+  #titlebar .logo img { width:18px; height:18px; object-fit:contain; }
+  #titlebar .logo span { color: var(--text-bright); }
+  #titlebar .logo span em { color: var(--accent); font-style:normal; }
+  .menu-bar {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: 8px;
+    -webkit-app-region: no-drag;
+  }
+  .menu-bar button {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    transition: all .15s;
+  }
+  .menu-bar button:hover { background: var(--hover); color: var(--text-bright); }
+  .title-center {
+    flex: 1;
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: 'Syne', sans-serif;
+  }
+  .win-controls {
+    display: flex;
+    gap: 6px;
+    -webkit-app-region: no-drag;
+  }
+  .win-btn {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+  }
+  .win-close { background: #ff5f57; }
+  .win-min { background: #febc2e; }
+  .win-max { background: #28c840; }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+  /* MAIN LAYOUT */
+  #app { display:flex; flex:1; overflow:hidden; }
 
-        /* Editor Overrides */
-        .editor-font {
-            font-family: 'Fira Code', 'Courier New', Consolas, monospace !important;
-            font-size: 14px !important;
-            line-height: 1.5 !important;
-            tab-size: 4;
-        }
+  /* ACTIVITY BAR */
+  #activitybar {
+    width: 48px;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 0;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+  .act-btn {
+    width: 36px; height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--text-dim);
+    font-size: 18px;
+    transition: all .15s;
+    position: relative;
+  }
+  .act-btn:hover { color: var(--text-bright); background: var(--hover); }
+  .act-btn.active { color: var(--accent); background: var(--active); }
+  .act-btn.active::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    width: 3px;
+    height: 60%;
+    background: var(--accent);
+    border-radius: 0 2px 2px 0;
+  }
+  #activitybar .spacer { flex:1; }
 
-        #code-input, #code-output {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            padding: 20px;
-            margin: 0;
-            border: none;
-            outline: none;
-            white-space: pre;
-            word-wrap: normal;
-        }
+  /* SIDEBAR */
+  #sidebar {
+    width: 220px;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .sidebar-header {
+    padding: 10px 12px 6px;
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-dim);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .sidebar-header .icon-btn {
+    background: none; border: none;
+    color: var(--text-dim);
+    cursor: pointer; font-size: 14px;
+    padding: 2px 4px; border-radius: 3px;
+  }
+  .sidebar-header .icon-btn:hover { color: var(--text-bright); background: var(--hover); }
+  #file-tree { flex:1; overflow-y:auto; padding: 4px 0; }
+  #file-tree::-webkit-scrollbar { width: 4px; }
+  #file-tree::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .tree-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 8px 3px 16px;
+    font-size: 12.5px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin: 0 4px;
+    transition: background .1s;
+    white-space: nowrap;
+  }
+  .tree-item:hover { background: var(--hover); }
+  .tree-item.active { background: var(--active); color: var(--text-bright); }
+  .tree-item .fi { font-size: 13px; }
+  .tree-folder {
+    padding-left: 8px;
+    font-weight: 600;
+    color: var(--text-bright);
+    font-family: 'Syne', sans-serif;
+  }
+  .tree-folder .arrow { font-size: 10px; color: var(--text-dim); transition: transform .15s; }
+  .tree-folder.open .arrow { transform: rotate(90deg); }
 
-        #code-input {
-            color: transparent;
-            background: transparent;
-            caret-color: #fff;
-            z-index: 2;
-            resize: none;
-            overflow: auto;
-        }
+  /* EDITOR AREA */
+  #editor-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--editor-bg);
+  }
 
-        #code-output {
-            z-index: 1;
-            pointer-events: none;
-            overflow: hidden; /* Scroll handled by syncScroll via textarea */
-        }
-        
-        /* Prism Theme Overrides for perfect alignment */
-        pre[class*="language-"] {
-            background: transparent !important;
-            margin: 0 !important;
-            text-shadow: none !important;
-        }
-        code[class*="language-"], pre[class*="language-"] {
-            text-shadow: none !important;
-        }
+  /* TABS */
+  #tabs {
+    height: 36px;
+    background: var(--tab-bg);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-end;
+    overflow-x: auto;
+    flex-shrink: 0;
+  }
+  #tabs::-webkit-scrollbar { height: 0; }
+  .tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 14px;
+    height: 34px;
+    font-size: 12px;
+    cursor: pointer;
+    border-right: 1px solid var(--border);
+    color: var(--text-dim);
+    white-space: nowrap;
+    transition: all .15s;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .tab:hover { background: var(--hover); color: var(--text); }
+  .tab.active {
+    background: var(--editor-bg);
+    color: var(--text-bright);
+    border-bottom: 2px solid var(--accent);
+  }
+  .tab .close {
+    font-size: 14px; opacity: 0;
+    transition: opacity .15s;
+    width: 16px; height: 16px;
+    display: flex; align-items:center; justify-content:center;
+    border-radius: 3px;
+  }
+  .tab:hover .close { opacity: 0.6; }
+  .tab .close:hover { opacity: 1; background: rgba(255,255,255,0.1); }
+  .tab-icon { font-size: 13px; }
+  .tab-new {
+    padding: 0 12px;
+    height: 34px;
+    display: flex; align-items:center;
+    cursor: pointer;
+    color: var(--text-dim);
+    font-size: 18px;
+    transition: all .15s;
+  }
+  .tab-new:hover { color: var(--text-bright); background: var(--hover); }
 
-        .glass-panel {
-            background: var(--glass);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--border);
-        }
+  /* EDITOR CONTENT */
+  #editor-wrapper {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+  }
+  #line-numbers {
+    width: 50px;
+    background: var(--editor-bg);
+    padding: 16px 0;
+    text-align: right;
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--line-num);
+    flex-shrink: 0;
+    overflow: hidden;
+    padding-right: 12px;
+    border-right: 1px solid var(--border);
+    user-select: none;
+  }
+  #editor {
+    flex: 1;
+    background: var(--editor-bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.65;
+    padding: 16px 16px;
+    border: none;
+    outline: none;
+    resize: none;
+    tab-size: 2;
+    overflow: auto;
+    white-space: pre;
+    caret-color: var(--accent);
+    user-select: text;
+  }
+  #editor::-webkit-scrollbar { width: 8px; height: 8px; }
+  #editor::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  #editor::selection { background: var(--selection); }
 
-        .tab-active {
-            border-top: 2px solid var(--accent);
-            background: var(--bg-editor);
-            color: white;
-        }
+  /* SYNTAX HIGHLIGHT OVERLAY */
+  #highlight-view {
+    position: absolute;
+    pointer-events: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.65;
+    padding: 16px 16px;
+    white-space: pre;
+    word-wrap: normal;
+    top: 0; left: 0; right: 0;
+    color: transparent;
+  }
 
-        .file-item .file-actions { display: none; }
-        .file-item:hover .file-actions { display: flex; }
-        .file-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            cursor: pointer;
-        }
+  /* BOTTOM PANEL */
+  #panel {
+    height: 160px;
+    background: var(--panel-bg);
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+  .panel-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    height: 30px;
+    align-items: center;
+  }
+  .panel-tab {
+    padding: 0 14px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    font-size: 11px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+    transition: all .15s;
+    border-bottom: 2px solid transparent;
+  }
+  .panel-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .panel-tab:hover:not(.active) { color: var(--text); }
+  #terminal {
+    flex: 1;
+    padding: 8px 14px;
+    font-size: 12px;
+    overflow-y: auto;
+    color: var(--text);
+  }
+  #terminal::-webkit-scrollbar { width: 4px; }
+  #terminal::-webkit-scrollbar-thumb { background: var(--border); }
+  .term-line { line-height: 1.7; }
+  .term-prompt { color: var(--accent3); }
+  .term-path { color: var(--accent); }
+  .term-output { color: var(--text-dim); }
+  .term-error { color: var(--accent2); }
+  #term-input-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 14px 8px;
+  }
+  .term-input-prompt { color: var(--accent3); font-size: 12px; white-space: nowrap; }
+  #term-input {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--text-bright);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    outline: none;
+    caret-color: var(--accent);
+  }
 
-        /* Glassmorphism Sidebar */
-        .sidebar-btn {
-            transition: all 0.2s;
-            color: #64748b;
-        }
-        .sidebar-btn.active, .sidebar-btn:hover {
-            color: var(--accent);
-        }
-        .sidebar-btn.active {
-            background: rgba(124, 58, 237, 0.15);
-            border-left: 2px solid var(--accent);
-        }
+  /* STATUS BAR */
+  #statusbar {
+    height: 24px;
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+  .status-item {
+    font-size: 11px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    color: #000;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    opacity: 0.85;
+    cursor: pointer;
+  }
+  .status-item:hover { opacity: 1; }
+  .status-right { margin-left: auto; display:flex; gap:16px; }
+  #status-cursor { margin-left: auto; }
 
-        #yall-terminal {
-            background: #000000;
-            font-family: 'Fira Code', monospace;
-        }
-        
-        .empty-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            opacity: 0.5;
-            user-select: none;
-        }
-    </style>
+  /* WELCOME SCREEN */
+  #welcome {
+    flex:1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    padding: 40px;
+  }
+  .welcome-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 42px;
+    font-weight: 800;
+    color: var(--text-bright);
+    letter-spacing: -1px;
+  }
+  .welcome-logo span { color: var(--accent); }
+  .welcome-sub {
+    font-size: 13px;
+    color: var(--text-dim);
+    font-family: 'Syne', sans-serif;
+  }
+  .welcome-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .welcome-btn {
+    background: var(--hover);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .welcome-btn:hover {
+    background: var(--active);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* SEARCH PANEL */
+  #search-panel {
+    padding: 10px;
+    display: none;
+  }
+  #search-panel.active { display: block; }
+  .search-input-wrap {
+    display: flex;
+    align-items: center;
+    background: var(--editor-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 4px 8px;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .search-input-wrap input {
+    background: none;
+    border: none;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    outline: none;
+    flex:1;
+  }
+  .search-input-wrap span { color: var(--text-dim); font-size: 13px; }
+  .search-results { font-size: 11px; color: var(--text-dim); padding: 4px; }
+
+  /* MINIMAP */
+  #minimap {
+    width: 60px;
+    background: rgba(0,0,0,0.2);
+    border-left: 1px solid var(--border);
+    overflow: hidden;
+    opacity: 0.4;
+    flex-shrink: 0;
+    font-size: 3px;
+    line-height: 1.65;
+    padding: 16px 4px;
+    color: var(--text-dim);
+    white-space: pre;
+    pointer-events: none;
+  }
+
+  /* CONTEXT MENU */
+  #ctx-menu {
+    position: fixed;
+    background: var(--sidebar-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px;
+    z-index: 9999;
+    display: none;
+    min-width: 160px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  .ctx-item {
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background .1s;
+    font-family: 'Syne', sans-serif;
+  }
+  .ctx-item:hover { background: var(--hover); color: var(--text-bright); }
+  .ctx-sep { height: 1px; background: var(--border); margin: 4px; }
+  .ctx-item .key { margin-left:auto; color: var(--text-dim); font-size: 10px; }
+
+  /* TOOLTIPS */
+  .tooltip {
+    position: absolute;
+    left: 52px;
+    background: var(--sidebar-bg);
+    color: var(--text-bright);
+    font-size: 11px;
+    font-family: 'Syne', sans-serif;
+    padding: 4px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    border: 1px solid var(--border);
+    z-index: 100;
+    transition: opacity .1s;
+  }
+  .act-btn:hover .tooltip { opacity: 1; }
+
+  /* NOTIFICATIONS */
+  #notif {
+    position: fixed;
+    bottom: 32px;
+    right: 16px;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+  }
+  .notif-item {
+    background: var(--sidebar-bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 12px;
+    font-family: 'Syne', sans-serif;
+    color: var(--text);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    animation: slideIn .3s ease forwards;
+    max-width: 280px;
+  }
+  @keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  /* RESIZER */
+  .resizer {
+    width: 4px;
+    background: transparent;
+    cursor: col-resize;
+    flex-shrink: 0;
+    transition: background .15s;
+  }
+  .resizer:hover { background: var(--accent); opacity: 0.4; }
+
+  /* BREADCRUMB */
+  #breadcrumb {
+    height: 26px;
+    background: var(--editor-bg);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: 'Syne', sans-serif;
+    flex-shrink: 0;
+  }
+  #breadcrumb .bc-sep { color: var(--border); }
+  #breadcrumb .bc-current { color: var(--text); }
+</style>
 </head>
-<body class="flex flex-col">
+<body>
 
-    <!-- Top Navigation -->
-    <header class="h-12 border-b border-white/10 flex items-center justify-between px-4 glass-panel shrink-0">
-        <div class="flex items-center gap-3">
-            <div class="w-7 h-7 bg-gradient-to-br from-purple-500 to-indigo-600 rounded flex items-center justify-center font-bold text-xs italic shadow-lg shadow-purple-500/20">YS</div>
-            <span class="text-sm font-semibold tracking-wide uppercase opacity-90">YallStudioCode</span>
+<!-- TITLE BAR -->
+<div id="titlebar">
+  <div class="logo">
+    <img src="icon.png" alt="YSCode" onerror="this.style.display='none'">
+    <span><em>Y</em>all<em>S</em>tudio<em>C</em>ode</span>
+  </div>
+  <div class="menu-bar">
+    <button onclick="menuAction('file')">File</button>
+    <button onclick="menuAction('edit')">Edit</button>
+    <button onclick="menuAction('view')">View</button>
+    <button onclick="menuAction('run')">Run</button>
+    <button onclick="menuAction('terminal')">Terminal</button>
+    <button onclick="menuAction('help')">Help</button>
+  </div>
+  <div class="title-center" id="title-center">YallStudioCode — ysc.workspace</div>
+  <div class="win-controls">
+    <button class="win-btn win-close" title="Close"></button>
+    <button class="win-btn win-min" title="Minimize"></button>
+    <button class="win-btn win-max" title="Maximize"></button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+
+  <!-- ACTIVITY BAR -->
+  <div id="activitybar">
+    <div class="act-btn active" onclick="setActivity('explorer')" id="act-explorer" title="Explorer">
+      📁<span class="tooltip">Explorer</span>
+    </div>
+    <div class="act-btn" onclick="setActivity('search')" id="act-search" title="Search">
+      🔍<span class="tooltip">Search</span>
+    </div>
+    <div class="act-btn" onclick="setActivity('git')" id="act-git" title="Source Control">
+      🌿<span class="tooltip">Source Control</span>
+    </div>
+    <div class="act-btn" onclick="setActivity('run')" id="act-run" title="Run & Debug">
+      ▶️<span class="tooltip">Run & Debug</span>
+    </div>
+    <div class="act-btn" onclick="setActivity('extensions')" id="act-ext" title="Extensions">
+      🧩<span class="tooltip">Extensions</span>
+    </div>
+    <div class="spacer"></div>
+    <div class="act-btn" onclick="notify('Settings coming soon! 🤠')" title="Settings">
+      ⚙️<span class="tooltip">Settings</span>
+    </div>
+    <div class="act-btn" onclick="notify('Howdy, partner! 🤠')" title="Account">
+      👤<span class="tooltip">Account</span>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <!-- EXPLORER -->
+    <div id="panel-explorer">
+      <div class="sidebar-header">
+        EXPLORER
+        <div>
+          <button class="icon-btn" onclick="newFile()" title="New File">+</button>
+          <button class="icon-btn" onclick="newFolder()" title="New Folder">📁</button>
+          <button class="icon-btn" onclick="refreshTree()" title="Refresh">↻</button>
         </div>
-        <div class="hidden md:flex gap-6 text-xs font-medium opacity-70">
-            <span class="hover:text-white cursor-pointer transition">File</span>
-            <span class="hover:text-white cursor-pointer transition">Edit</span>
-            <span class="hover:text-white cursor-pointer transition">Selection</span>
-            <span class="hover:text-white cursor-pointer transition">View</span>
-            <span class="hover:text-white cursor-pointer transition">Run</span>
-            <span class="hover:text-white cursor-pointer transition">Terminal</span>
+      </div>
+      <div id="file-tree"></div>
+    </div>
+    <!-- SEARCH -->
+    <div id="panel-search" style="display:none">
+      <div class="sidebar-header">SEARCH</div>
+      <div style="padding:10px">
+        <div class="search-input-wrap">
+          <span>🔍</span>
+          <input type="text" placeholder="Search files..." id="search-input" oninput="doSearch(this.value)">
         </div>
-        <div class="flex items-center gap-3">
-            <button onclick="runCode()" class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition shadow-lg shadow-purple-600/20">
-                <i data-lucide="play" class="w-3.5 h-3.5"></i> Run Code
-            </button>
-        </div>
-    </header>
+        <div class="search-results" id="search-results">Type to search...</div>
+      </div>
+    </div>
+    <!-- GIT -->
+    <div id="panel-git" style="display:none">
+      <div class="sidebar-header">SOURCE CONTROL</div>
+      <div style="padding:12px;font-size:12px;color:var(--text-dim)">
+        <div style="color:var(--accent3);margin-bottom:8px">✓ No pending changes</div>
+        <div style="color:var(--text-dim);font-size:11px">Branch: <span style="color:var(--accent)">main</span></div>
+        <div style="margin-top:12px;font-size:11px">Last commit: <span style="color:var(--text)">init YSCode 🤠</span></div>
+      </div>
+    </div>
+    <!-- RUN -->
+    <div id="panel-run" style="display:none">
+      <div class="sidebar-header">RUN & DEBUG</div>
+      <div style="padding:12px;font-size:12px;color:var(--text-dim)">
+        <button onclick="runCode()" style="background:var(--accent);color:#000;border:none;padding:8px 16px;border-radius:4px;font-family:'Syne',sans-serif;font-weight:700;cursor:pointer;font-size:12px;width:100%">▶ Run Code</button>
+        <div style="margin-top:12px;font-size:11px;color:var(--text-dim)">No debug config set</div>
+      </div>
+    </div>
+    <!-- EXTENSIONS -->
+    <div id="panel-extensions" style="display:none">
+      <div class="sidebar-header">EXTENSIONS</div>
+      <div style="padding:8px">
+        <div class="tree-item" onclick="notify('Installing YeeHaw Theme... 🤠')">🎨 YeeHaw Theme</div>
+        <div class="tree-item" onclick="notify('Installing Prettier... ✨')">✨ Prettier</div>
+        <div class="tree-item" onclick="notify('Installing ESLint... 🔍')">🔍 ESLint</div>
+        <div class="tree-item" onclick="notify('Installing Git Lens... 🌿')">🌿 GitLens</div>
+        <div class="tree-item" onclick="notify('Installing Auto Import... 📦')">📦 Auto Import</div>
+        <div class="tree-item" onclick="notify('Installing Copilot... 🤖')">🤖 YSCopilot AI</div>
+      </div>
+    </div>
+  </div>
 
-    <div class="flex flex-1 overflow-hidden">
-        <!-- Activity Bar -->
-        <nav class="w-14 border-r border-white/10 flex flex-col items-center py-4 gap-4 glass-panel shrink-0 z-10">
-            <div class="sidebar-btn active p-2.5 rounded-lg cursor-pointer w-full flex justify-center border-l-2 border-transparent"><i data-lucide="files" class="w-5 h-5"></i></div>
-            <div class="sidebar-btn p-2.5 rounded-lg cursor-pointer w-full flex justify-center border-l-2 border-transparent"><i data-lucide="search" class="w-5 h-5"></i></div>
-            <div class="sidebar-btn p-2.5 rounded-lg cursor-pointer w-full flex justify-center border-l-2 border-transparent"><i data-lucide="git-branch" class="w-5 h-5"></i></div>
-            <div class="sidebar-btn p-2.5 rounded-lg cursor-pointer w-full flex justify-center border-l-2 border-transparent"><i data-lucide="blocks" class="w-5 h-5"></i></div>
-            <div class="mt-auto flex flex-col gap-4 w-full">
-                <div class="sidebar-btn p-2.5 rounded-lg cursor-pointer w-full flex justify-center"><i data-lucide="circle-user" class="w-5 h-5"></i></div>
-                <div class="sidebar-btn p-2.5 rounded-lg cursor-pointer w-full flex justify-center"><i data-lucide="settings" class="w-5 h-5"></i></div>
-            </div>
-        </nav>
+  <div class="resizer" id="resizer-sidebar"></div>
 
-        <!-- Sidebar / Explorer -->
-        <aside id="explorer" class="w-64 border-r border-white/10 bg-[#0a0a0c]/80 flex flex-col shrink-0">
-            <div class="p-3 text-[11px] uppercase tracking-widest opacity-60 font-bold flex justify-between items-center">
-                <span>Explorer</span>
-                <button onclick="createNewFile()" class="hover:text-white hover:bg-white/10 p-1 rounded transition" title="New File">
-                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                </button>
-            </div>
-            
-            <div class="px-3 py-1 text-xs font-semibold flex items-center gap-1 opacity-90 cursor-pointer">
-                <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i> YS_PROJECT
-            </div>
+  <!-- EDITOR + PANEL -->
+  <div id="editor-area">
+    <!-- TABS -->
+    <div id="tabs"></div>
 
-            <div id="file-list" class="flex-1 overflow-y-auto mt-1">
-                <!-- Files populated by JS -->
-            </div>
-        </aside>
-
-        <!-- Main Editor Area -->
-        <main class="flex-1 flex flex-col bg-[var(--bg-editor)] min-w-0">
-            <!-- Tabs -->
-            <div id="tab-container" class="h-10 border-b border-white/10 flex items-center overflow-x-auto bg-[#0a0a0c] shrink-0 scrollbar-hide">
-                <!-- Tabs populated by JS -->
-            </div>
-
-            <!-- Editor Wrapper -->
-            <div id="editor-wrapper" class="flex-1 flex overflow-hidden relative">
-                <!-- Empty State -->
-                <div id="empty-state" class="absolute inset-0 empty-state hidden z-50 bg-[var(--bg-editor)]">
-                    <div class="w-24 h-24 mb-6 opacity-20"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></div>
-                    <h2 class="text-xl font-medium mb-2">YallStudioCode</h2>
-                    <p class="text-sm">Select a file from the explorer to start editing.</p>
-                    <div class="mt-8 flex gap-4 text-xs">
-                        <span class="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded"><kbd class="bg-black/50 px-1.5 rounded">Ctrl</kbd> + <kbd class="bg-black/50 px-1.5 rounded">S</kbd> Save</span>
-                        <span class="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded"><kbd class="bg-black/50 px-1.5 rounded">Run</kbd> Execute</span>
-                    </div>
-                </div>
-
-                <!-- Line Numbers -->
-                <div id="line-numbers" class="w-12 bg-[#0a0a0c] border-r border-white/5 text-right pr-3 pt-[20px] pb-[20px] text-gray-500/50 editor-font select-none overflow-hidden shrink-0">
-                    1
-                </div>
-
-                <!-- Code Editor -->
-                <div id="editor-container" class="flex-1 relative">
-                    <textarea id="code-input" class="editor-font" spellcheck="false" 
-                        oninput="updateEditor()" 
-                        onkeydown="handleKeyDown(event)" 
-                        onkeyup="updateCursorPos()" 
-                        onclick="updateCursorPos()" 
-                        onscroll="syncScroll()"></textarea>
-                    <pre id="code-output" class="editor-font" aria-hidden="true"><code id="highlight-area" class="language-javascript"></code></pre>
-                </div>
-            </div>
-
-            <!-- Terminal / Console -->
-            <div id="terminal-section" class="h-56 border-t border-white/10 flex flex-col shrink-0 bg-[#0a0a0c]">
-                <div class="h-9 border-b border-white/10 flex items-center px-4 justify-between bg-[#111115]">
-                    <div class="flex gap-4 text-xs font-medium">
-                        <span class="text-gray-400 hover:text-white cursor-pointer uppercase tracking-wider">Problems</span>
-                        <span class="text-gray-400 hover:text-white cursor-pointer uppercase tracking-wider">Output</span>
-                        <span class="text-white border-b border-purple-500 uppercase tracking-wider">YallTerminal</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="clearTerminal()" class="text-gray-400 hover:text-white transition p-1" title="Clear Terminal">
-                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                        </button>
-                        <button class="text-gray-400 hover:text-white transition p-1">
-                            <i data-lucide="x" class="w-3.5 h-3.5"></i>
-                        </button>
-                    </div>
-                </div>
-                <div id="yall-terminal" class="flex-1 p-4 overflow-y-auto text-sm">
-                    <div class="opacity-60 text-xs mb-3 flex items-center gap-2">
-                        <i data-lucide="terminal" class="w-4 h-4"></i> YSCode Execution Engine v1.0.0
-                    </div>
-                    <div id="terminal-output" class="font-mono flex flex-col gap-1"></div>
-                </div>
-            </div>
-        </main>
+    <!-- BREADCRUMB -->
+    <div id="breadcrumb">
+      <span>YSCode</span>
+      <span class="bc-sep">›</span>
+      <span>src</span>
+      <span class="bc-sep">›</span>
+      <span class="bc-current" id="bc-file">welcome</span>
     </div>
 
-    <!-- Status Bar -->
-    <footer class="h-6 bg-[#7c3aed] text-white flex items-center justify-between px-3 text-[11px] font-medium shrink-0 z-20 relative">
-        <div class="flex gap-4">
-            <span class="flex items-center gap-1.5 hover:bg-white/20 px-1.5 py-0.5 rounded cursor-pointer transition"><i data-lucide="git-branch" class="w-3 h-3"></i> main*</span>
-            <span class="flex items-center gap-1.5 hover:bg-white/20 px-1.5 py-0.5 rounded cursor-pointer transition"><i data-lucide="refresh-cw" class="w-3 h-3"></i> Synced</span>
-            <span class="flex items-center gap-1.5 hover:bg-white/20 px-1.5 py-0.5 rounded cursor-pointer transition text-white/80"><i data-lucide="x-circle" class="w-3 h-3"></i> 0 <i data-lucide="alert-triangle" class="w-3 h-3 ml-1"></i> 0</span>
+    <!-- WELCOME or EDITOR WRAPPER -->
+    <div id="welcome" style="display:flex">
+      <div class="welcome-logo"><span>YS</span>Code</div>
+      <div class="welcome-sub">YallStudioCode — Code like a cowboy 🤠</div>
+      <div class="welcome-actions">
+        <button class="welcome-btn" onclick="openFile('index.html')">📄 New File</button>
+        <button class="welcome-btn" onclick="openFile('app.js')">📂 Open Folder</button>
+        <button class="welcome-btn" onclick="openFile('README.md')">📖 README</button>
+        <button class="welcome-btn" onclick="openFile('package.json')">📦 package.json</button>
+      </div>
+    </div>
+
+    <div id="editor-wrapper" style="display:none; flex:1; overflow:hidden;">
+      <div id="line-numbers"></div>
+      <textarea id="editor" spellcheck="false"
+        oninput="onEditorInput()"
+        onkeydown="onEditorKeydown(event)"
+        onclick="updateCursor()"
+        onkeyup="updateCursor()"
+        onscroll="syncScroll()"
+      ></textarea>
+      <div id="minimap"></div>
+    </div>
+
+    <!-- BOTTOM PANEL -->
+    <div id="panel">
+      <div class="panel-tabs">
+        <div class="panel-tab active" onclick="switchPanel('terminal')">TERMINAL</div>
+        <div class="panel-tab" onclick="switchPanel('problems')">PROBLEMS <span id="prob-count" style="background:var(--accent2);color:white;border-radius:8px;padding:0 5px;font-size:10px;margin-left:4px">0</span></div>
+        <div class="panel-tab" onclick="switchPanel('output')">OUTPUT</div>
+        <div style="margin-left:auto;padding-right:8px">
+          <button style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:14px" onclick="togglePanel()">✕</button>
         </div>
-        <div class="flex gap-4 text-white/90">
-            <span id="cursor-pos" class="hover:bg-white/20 px-1.5 py-0.5 rounded cursor-pointer transition">Ln 1, Col 1</span>
-            <span class="hover:bg-white/20 px-1.5 py-0.5 rounded cursor-pointer transition">Spaces: 4</span>
-            <span class="hover:bg-white/20 px-1.5 py-0.5 rounded cursor-pointer transition">UTF-8</span>
-            <span id="lang-status" class="hover:bg-white/20 px-1.5 py-0.5 rounded cursor-pointer transition font-bold">JavaScript</span>
-        </div>
-    </footer>
+      </div>
+      <div id="terminal"></div>
+      <div id="term-input-line">
+        <span class="term-input-prompt">ysc@YallStudioCode:~$</span>
+        <input type="text" id="term-input" placeholder="Type a command..." onkeydown="handleTermInput(event)" autocomplete="off">
+      </div>
+    </div>
+  </div>
 
-    <script>
-        // Project State
-        let projectFiles = [
-            { id: 1, name: 'index.js', content: '// Welcome to YSCode!\n\nfunction helloWorld() {\n    const message = "Hello from YallCode!";\n    console.log(message);\n    \n    // Try running this file!\n    const data = { user: "Developer", IDE: "YSCode" };\n    console.log("Details:", data);\n}\n\nhelloWorld();', language: 'javascript' },
-            { id: 2, name: 'styles.css', content: '/* YSCode Stylings */\nbody {\n    background-color: #0a0a0c;\n    color: #e2e8f0;\n    font-family: sans-serif;\n}\n\n.btn {\n    border-radius: 4px;\n    padding: 8px 16px;\n}', language: 'css' },
-            { id: 3, name: 'index.html', content: '<!DOCTYPE html>\n<html>\n<head>\n    <title>My App</title>\n</head>\n<body>\n    <h1>Welcome</h1>\n</body>\n</html>', language: 'markup' },
-            { id: 4, name: 'README.md', content: '# YSCode\n\nYour own custom browser-based IDE.\n\n## Features\n- Syntax Highlighting\n- File System\n- Terminal Execution', language: 'markdown' }
-        ];
+</div>
 
-        let activeFileId = 1;
-        let openFileIds = [1, 2, 4];
+<!-- STATUS BAR -->
+<div id="statusbar">
+  <div class="status-item" onclick="notify('Branch: main ✓')">🌿 main</div>
+  <div class="status-item" id="status-errors" onclick="switchPanel('problems')">⚠️ 0 errors</div>
+  <div class="status-item status-right">
+    <span id="status-lang">HTML</span>
+  </div>
+  <div class="status-item">
+    <span id="status-cursor">Ln 1, Col 1</span>
+  </div>
+  <div class="status-item">
+    <span>UTF-8</span>
+  </div>
+  <div class="status-item">
+    <span>CRLF</span>
+  </div>
+  <div class="status-item" onclick="notify('YSCode v1.0.0 — Yeehaw! 🤠')">
+    YSCode v1.0.0
+  </div>
+</div>
 
-        // DOM Elements
-        const input = document.getElementById('code-input');
-        const output = document.getElementById('highlight-area');
-        const pre = document.getElementById('code-output');
-        const lineNumbers = document.getElementById('line-numbers');
-        const terminalOutput = document.getElementById('terminal-output');
-        const emptyState = document.getElementById('empty-state');
+<!-- CONTEXT MENU -->
+<div id="ctx-menu">
+  <div class="ctx-item" onclick="ctxAction('cut')">✂️ Cut <span class="key">⌘X</span></div>
+  <div class="ctx-item" onclick="ctxAction('copy')">📋 Copy <span class="key">⌘C</span></div>
+  <div class="ctx-item" onclick="ctxAction('paste')">📌 Paste <span class="key">⌘V</span></div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="ctxAction('format')">✨ Format Document</div>
+  <div class="ctx-item" onclick="ctxAction('comment')">💬 Toggle Comment</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="ctxAction('rename')">✏️ Rename Symbol</div>
+  <div class="ctx-item" onclick="ctxAction('find')">🔍 Find References</div>
+</div>
 
-        function init() {
-            lucide.createIcons();
-            overrideConsole();
-            renderFiles();
-            renderTabs();
-            if(openFileIds.length > 0) {
-                loadFile(activeFileId || openFileIds[0]);
-            } else {
-                showEmptyState();
-            }
-        }
+<!-- NOTIFICATIONS -->
+<div id="notif"></div>
 
-        // --- Console Override for Terminal ---
-        function overrideConsole() {
-            const methods = ['log', 'error', 'warn', 'info'];
-            methods.forEach(method => {
-                const original = console[method];
-                console[method] = function(...args) {
-                    printToTerminal(method, args);
-                    original.apply(console, args);
-                };
-            });
-        }
+<script>
+// ===================== STATE =====================
+const state = {
+  files: {},
+  activeFile: null,
+  openTabs: [],
+  termHistory: [],
+  termHistIdx: -1,
+  panelVisible: true,
+};
 
-        function printToTerminal(type, args) {
-            const line = document.createElement('div');
-            line.className = 'py-0.5 border-l-2 pl-2 break-all';
-            
-            // Color coding based on log type
-            if (type === 'error') line.classList.add('border-red-500', 'text-red-400');
-            else if (type === 'warn') line.classList.add('border-yellow-500', 'text-yellow-400');
-            else line.classList.add('border-purple-500', 'text-gray-300');
+const DEFAULT_FILES = {
+  'index.html': `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>My App</title>\n  <link rel="stylesheet" href="style.css">\n</head>\n<body>\n  <h1>Hello, World! 🤠</h1>\n  <p>Welcome to YallStudioCode.</p>\n  <script src="app.js"><\/script>\n</body>\n</html>`,
+  'style.css': `/* === YSCode Styles === */\n\nbody {\n  font-family: 'Syne', sans-serif;\n  background: #0f0f10;\n  color: #d4d4d8;\n  margin: 0;\n  padding: 40px;\n}\n\nh1 {\n  color: #f5a623;\n  font-size: 2.5rem;\n}\n\np {\n  color: #71717a;\n  margin-top: 12px;\n}`,
+  'app.js': `// === app.js ===\n\nconsole.log('YSCode is alive! 🤠');\n\nconst greet = (name) => {\n  return \`Howdy, \${name}! Welcome to YallStudioCode.\`;\n};\n\ndocument.addEventListener('DOMContentLoaded', () => {\n  console.log(greet('partner'));\n  const h1 = document.querySelector('h1');\n  if (h1) h1.addEventListener('click', () => {\n    alert('Yeehaw! 🤠');\n  });\n});`,
+  'README.md': `# YallStudioCode (YSCode)\n\n> Code like a cowboy 🤠\n\n## Features\n\n- Syntax highlighting\n- Multi-tab editing\n- Integrated terminal\n- File explorer\n- Git integration\n- Extensions marketplace\n\n## Getting Started\n\n\`\`\`bash\n# Open a project\nysc open my-project\n\n# Run code\nysc run\n\`\`\`\n\n## License\n\nMIT — Yee-haw!`,
+  'package.json': `{\n  "name": "my-yscode-project",\n  "version": "1.0.0",\n  "description": "Built with YallStudioCode 🤠",\n  "main": "app.js",\n  "scripts": {\n    "start": "node app.js",\n    "dev": "nodemon app.js",\n    "build": "webpack --mode production",\n    "test": "jest"\n  },\n  "keywords": ["yscode", "yeehaw"],\n  "author": "A Cowboy Coder",\n  "license": "MIT",\n  "dependencies": {}\n}`,
+  'config.yml': `# YSCode Configuration\nyscode:\n  version: 1.0.0\n  theme: yee-haw-dark\n  font: JetBrains Mono\n  fontSize: 13\n  tabSize: 2\n  wordWrap: off\n  minimap: true\n  terminal:\n    shell: /bin/bash\n    fontSize: 12`,
+};
 
-            // Format output strings & objects
-            const formattedArgs = args.map(a => {
-                if (typeof a === 'object') {
-                    try { return JSON.stringify(a, null, 2); } 
-                    catch(e) { return String(a); }
-                }
-                return String(a);
-            }).join(' ');
+// Copy files to state
+Object.assign(state.files, DEFAULT_FILES);
 
-            line.textContent = `> ${formattedArgs}`;
-            terminalOutput.appendChild(line);
-            
-            // Auto scroll to bottom
-            const terminalContainer = document.getElementById('yall-terminal');
-            terminalContainer.scrollTop = terminalContainer.scrollHeight;
-        }
+// ===================== FILE ICONS =====================
+function getIcon(filename) {
+  const ext = filename.split('.').pop().toLowerCase();
+  const icons = {
+    html: '🌐', css: '🎨', js: '🟨', ts: '🔷', jsx: '⚛️', tsx: '⚛️',
+    json: '📦', md: '📖', yml: '⚙️', yaml: '⚙️', py: '🐍',
+    rs: '🦀', go: '🐹', java: '☕', cpp: '⚙️', c: '⚙️',
+    sh: '💻', txt: '📄', png: '🖼️', jpg: '🖼️', svg: '🎨',
+    gif: '🖼️', mp4: '🎬', mp3: '🎵',
+  };
+  return icons[ext] || '📄';
+}
 
-        // --- File System UI ---
-        function renderFiles() {
-            const list = document.getElementById('file-list');
-            list.innerHTML = projectFiles.map(file => `
-                <div onclick="openFile(${file.id})" class="file-item pl-6 pr-3 py-1 flex items-center justify-between text-[13px] transition ${activeFileId === file.id && openFileIds.includes(file.id) ? 'bg-purple-600/20 text-purple-300 border-l-2 border-purple-500' : 'text-gray-300 border-l-2 border-transparent'}">
-                    <div class="flex items-center gap-2 truncate">
-                        <i data-lucide="${getFileIcon(file.name)}" class="w-4 h-4 ${getFileColor(file.name)}"></i>
-                        <span class="truncate">${file.name}</span>
-                    </div>
-                    <div class="file-actions flex gap-1 text-gray-400">
-                        <i data-lucide="trash-2" class="w-3.5 h-3.5 hover:text-red-400" onclick="deleteFile(event, ${file.id})"></i>
-                    </div>
-                </div>
-            `).join('');
-            lucide.createIcons();
-        }
+function getLang(filename) {
+  const ext = filename.split('.').pop().toLowerCase();
+  const langs = {
+    html: 'HTML', css: 'CSS', js: 'JavaScript', ts: 'TypeScript',
+    jsx: 'JSX', tsx: 'TSX', json: 'JSON', md: 'Markdown',
+    yml: 'YAML', yaml: 'YAML', py: 'Python', rs: 'Rust',
+    go: 'Go', java: 'Java', sh: 'Shell', txt: 'Plain Text',
+  };
+  return langs[ext] || 'Plain Text';
+}
 
-        function getFileIcon(filename) {
-            if (filename.endsWith('.js')) return 'file-json';
-            if (filename.endsWith('.css')) return 'palette';
-            if (filename.endsWith('.md')) return 'file-text';
-            if (filename.endsWith('.html')) return 'layout-template';
-            return 'file';
-        }
+// ===================== FILE TREE =====================
+function buildTree() {
+  const tree = document.getElementById('file-tree');
+  tree.innerHTML = '';
 
-        function getFileColor(filename) {
-            if (filename.endsWith('.js')) return 'text-yellow-400';
-            if (filename.endsWith('.css')) return 'text-blue-400';
-            if (filename.endsWith('.html')) return 'text-orange-400';
-            if (filename.endsWith('.md')) return 'text-blue-200';
-            return 'text-gray-400';
-        }
+  // Folder header
+  const folder = document.createElement('div');
+  folder.className = 'tree-item tree-folder open';
+  folder.innerHTML = `<span class="arrow">▶</span> 📁 <span>YSCode Project</span>`;
+  folder.onclick = function() {
+    this.classList.toggle('open');
+    [...tree.querySelectorAll('.tree-file')].forEach(f => {
+      f.style.display = this.classList.contains('open') ? '' : 'none';
+    });
+  };
+  tree.appendChild(folder);
 
-        function createNewFile() {
-            const fileName = prompt("Enter file name (e.g., script.js, style.css):");
-            if (!fileName) return;
+  Object.keys(state.files).forEach(name => {
+    const item = document.createElement('div');
+    item.className = 'tree-item tree-file' + (state.activeFile === name ? ' active' : '');
+    item.dataset.file = name;
+    item.innerHTML = `<span class="fi">${getIcon(name)}</span> ${name}`;
+    item.onclick = () => openFile(name);
+    item.oncontextmenu = (e) => { e.preventDefault(); showCtxMenu(e, name); };
+    tree.appendChild(item);
+  });
+}
 
-            // Simple validation
-            if (projectFiles.some(f => f.name === fileName)) {
-                alert("File already exists!");
-                return;
-            }
+function refreshTree() {
+  buildTree();
+  notify('File tree refreshed ↻');
+}
 
-            let lang = 'plaintext';
-            if (fileName.endsWith('.js')) lang = 'javascript';
-            else if (fileName.endsWith('.css')) lang = 'css';
-            else if (fileName.endsWith('.html')) lang = 'markup';
-            else if (fileName.endsWith('.md')) lang = 'markdown';
-            else if (fileName.endsWith('.json')) lang = 'json';
-            
-            const newFile = { id: Date.now(), name: fileName, content: '', language: lang };
-            projectFiles.push(newFile);
-            
-            openFile(newFile.id);
-        }
+// ===================== TABS =====================
+function buildTabs() {
+  const tabsEl = document.getElementById('tabs');
+  tabsEl.innerHTML = '';
+  state.openTabs.forEach(name => {
+    const tab = document.createElement('div');
+    tab.className = 'tab' + (state.activeFile === name ? ' active' : '');
+    tab.dataset.file = name;
+    tab.innerHTML = `
+      <span class="tab-icon">${getIcon(name)}</span>
+      <span>${name}</span>
+      <span class="close" onclick="closeTab(event,'${name}')">✕</span>
+    `;
+    tab.onclick = (e) => { if (!e.target.classList.contains('close')) openFile(name); };
+    tabsEl.appendChild(tab);
+  });
+  // New tab button
+  const newTab = document.createElement('div');
+  newTab.className = 'tab-new';
+  newTab.title = 'New File';
+  newTab.textContent = '+';
+  newTab.onclick = newFile;
+  tabsEl.appendChild(newTab);
+}
 
-        function deleteFile(e, id) {
-            e.stopPropagation(); // Prevent opening the file when clicking delete
-            if(!confirm("Are you sure you want to delete this file?")) return;
+// ===================== EDITOR =====================
+function openFile(name) {
+  // Show editor, hide welcome
+  document.getElementById('welcome').style.display = 'none';
+  document.getElementById('editor-wrapper').style.display = 'flex';
 
-            // Remove from project
-            projectFiles = projectFiles.filter(f => f.id !== id);
-            
-            // Remove from tabs if open
-            closeTab(null, id);
-            renderFiles();
-        }
+  if (!state.files[name]) {
+    state.files[name] = `// New file: ${name}\n`;
+  }
 
-        // --- Tabs UI ---
-        function renderTabs() {
-            const container = document.getElementById('tab-container');
-            container.innerHTML = openFileIds.map(id => {
-                const file = projectFiles.find(f => f.id === id);
-                if(!file) return '';
-                const isActive = activeFileId === id;
-                return `
-                    <div onclick="loadFile(${file.id})" class="h-full px-4 flex items-center gap-2 text-[13px] cursor-pointer border-r border-white/5 transition-all ${isActive ? 'tab-active' : 'text-gray-400 hover:bg-white/5'}">
-                        <i data-lucide="${getFileIcon(file.name)}" class="w-3.5 h-3.5 ${getFileColor(file.name)}"></i>
-                        <span class="truncate max-w-[120px]">${file.name}</span>
-                        <i data-lucide="x" class="w-3.5 h-3.5 ml-1 opacity-50 hover:opacity-100 hover:bg-white/20 rounded-md p-0.5" onclick="closeTab(event, ${file.id})"></i>
-                    </div>
-                `;
-            }).join('');
-            lucide.createIcons();
-        }
+  state.activeFile = name;
+  if (!state.openTabs.includes(name)) state.openTabs.push(name);
 
-        function openFile(id) {
-            if (!openFileIds.includes(id)) {
-                openFileIds.push(id);
-            }
-            loadFile(id);
-        }
+  const editor = document.getElementById('editor');
+  editor.value = state.files[name];
 
-        function closeTab(e, id) {
-            if(e) e.stopPropagation();
-            
-            // Save before closing
-            if(activeFileId === id) saveCurrentFile();
+  buildTabs();
+  buildTree();
+  updateLineNumbers();
+  updateMinimap();
+  updateCursor();
+  document.getElementById('bc-file').textContent = name;
+  document.getElementById('status-lang').textContent = getLang(name);
+  document.getElementById('title-center').textContent = `YallStudioCode — ${name}`;
+  editor.focus();
+}
 
-            openFileIds = openFileIds.filter(tabId => tabId !== id);
-            
-            if (openFileIds.length === 0) {
-                showEmptyState();
-            } else if (activeFileId === id) {
-                // Switch to the last open tab
-                loadFile(openFileIds[openFileIds.length - 1]);
-            } else {
-                renderTabs();
-                renderFiles();
-            }
-        }
+function closeTab(e, name) {
+  e.stopPropagation();
+  const idx = state.openTabs.indexOf(name);
+  state.openTabs.splice(idx, 1);
 
-        function showEmptyState() {
-            activeFileId = null;
-            emptyState.classList.remove('hidden');
-            input.disabled = true;
-            input.value = '';
-            output.textContent = '';
-            lineNumbers.innerHTML = '';
-            document.getElementById('cursor-pos').innerText = `Ln 1, Col 1`;
-            document.getElementById('lang-status').innerText = `None`;
-            renderTabs();
-            renderFiles();
-        }
+  if (state.activeFile === name) {
+    if (state.openTabs.length > 0) {
+      openFile(state.openTabs[Math.min(idx, state.openTabs.length - 1)]);
+    } else {
+      state.activeFile = null;
+      document.getElementById('welcome').style.display = 'flex';
+      document.getElementById('editor-wrapper').style.display = 'none';
+      document.getElementById('title-center').textContent = 'YallStudioCode — ysc.workspace';
+    }
+  }
+  buildTabs();
+  buildTree();
+}
 
-        // --- Editor Core ---
-        function saveCurrentFile() {
-            if(!activeFileId) return;
-            const currentFile = projectFiles.find(f => f.id === activeFileId);
-            if (currentFile) currentFile.content = input.value;
-        }
+function onEditorInput() {
+  if (!state.activeFile) return;
+  state.files[state.activeFile] = document.getElementById('editor').value;
+  updateLineNumbers();
+  updateMinimap();
+  checkProblems();
+}
 
-        function loadFile(id) {
-            saveCurrentFile(); // Save previous
+function onEditorKeydown(e) {
+  const editor = document.getElementById('editor');
 
-            activeFileId = id;
-            const file = projectFiles.find(f => f.id === id);
-            if (!file) return;
+  // TAB key
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const start = editor.selectionStart;
+    const end = editor.selectionEnd;
+    editor.value = editor.value.substring(0, start) + '  ' + editor.value.substring(end);
+    editor.selectionStart = editor.selectionEnd = start + 2;
+    onEditorInput();
+  }
 
-            emptyState.classList.add('hidden');
-            input.disabled = false;
-            
-            input.value = file.content;
-            output.className = `language-${file.language}`;
-            
-            // Update Status bar
-            document.getElementById('lang-status').innerText = 
-                file.language.charAt(0).toUpperCase() + file.language.slice(1);
-            
-            updateEditor();
-            updateCursorPos();
-            renderFiles();
-            renderTabs();
-        }
+  // SAVE
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault();
+    saveFile();
+  }
 
-        function updateEditor() {
-            let code = input.value;
-            // Handle trailing newline for Prism to show blank lines at the end correctly
-            if(code[code.length-1] === "\n") code += " ";
-            
-            output.textContent = code;
-            Prism.highlightElement(output);
-            
-            updateLineNumbers();
-        }
+  // Auto-close brackets
+  const pairs = { '(': ')', '[': ']', '{': '}', '"': '"', "'": "'" };
+  if (pairs[e.key]) {
+    const start = editor.selectionStart;
+    const end = editor.selectionEnd;
+    if (start === end) {
+      e.preventDefault();
+      const v = editor.value;
+      editor.value = v.substring(0, start) + e.key + pairs[e.key] + v.substring(end);
+      editor.selectionStart = editor.selectionEnd = start + 1;
+      onEditorInput();
+    }
+  }
+}
 
-        function updateLineNumbers() {
-            const linesCount = input.value.split('\n').length;
-            let linesHtml = '';
-            for (let i = 1; i <= linesCount; i++) {
-                linesHtml += i + '<br>';
-            }
-            lineNumbers.innerHTML = linesHtml || '1';
-        }
+function updateLineNumbers() {
+  const editor = document.getElementById('editor');
+  const lines = editor.value.split('\n');
+  const ln = document.getElementById('line-numbers');
+  ln.innerHTML = lines.map((_, i) => `<div>${i + 1}</div>`).join('');
 
-        function updateCursorPos() {
-            if(!activeFileId) return;
-            const textBefore = input.value.substring(0, input.selectionStart);
-            const lines = textBefore.split('\n');
-            const currentLine = lines.length;
-            const currentCol = lines[lines.length-1].length + 1;
-            document.getElementById('cursor-pos').innerText = `Ln ${currentLine}, Col ${currentCol}`;
-        }
+  // Sync scroll
+  ln.scrollTop = editor.scrollTop;
+}
 
-        function syncScroll() {
-            pre.scrollTop = input.scrollTop;
-            pre.scrollLeft = input.scrollLeft;
-            lineNumbers.scrollTop = input.scrollTop;
-        }
+function syncScroll() {
+  const editor = document.getElementById('editor');
+  document.getElementById('line-numbers').scrollTop = editor.scrollTop;
+}
 
-        function handleKeyDown(e) {
-            // Handle Tab indentation
-            if (e.key === 'Tab') {
-                e.preventDefault();
-                const start = input.selectionStart;
-                const end = input.selectionEnd;
-                input.value = input.value.substring(0, start) + "    " + input.value.substring(end);
-                input.selectionStart = input.selectionEnd = start + 4;
-                updateEditor();
-            }
-            
-            // Update cursor on arrow keys
-            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-                // setTimeout used to let the cursor move before capturing position
-                setTimeout(updateCursorPos, 10);
-            }
-        }
+function updateMinimap() {
+  const editor = document.getElementById('editor');
+  document.getElementById('minimap').textContent = editor.value;
+}
 
-        // --- Execution Engine ---
-        function runCode() {
-            saveCurrentFile();
-            const file = projectFiles.find(f => f.id === activeFileId);
-            
-            if (!file) {
-                console.warn("No file open to run.");
-                return;
-            }
+function updateCursor() {
+  const editor = document.getElementById('editor');
+  const val = editor.value.substring(0, editor.selectionStart);
+  const lines = val.split('\n');
+  const ln = lines.length;
+  const col = lines[lines.length - 1].length + 1;
+  document.getElementById('status-cursor').textContent = `Ln ${ln}, Col ${col}`;
+}
 
-            if (file.language !== 'javascript') {
-                console.warn(`Execution for ${file.language} is not supported in this demo. Try running a .js file.`);
-                return;
-            }
-            
-            printToTerminal('info', [`--- Running ${file.name} ---`]);
-            
-            try {
-                // Execute code. Note: In a real app, use Web Workers or Sandboxed IFrames!
-                const exec = new Function(input.value);
-                exec();
-            } catch (err) {
-                console.error(err.name + ": " + err.message);
-            }
-            
-            printToTerminal('info', [`--- Execution Finished ---`]);
-        }
+function saveFile() {
+  if (!state.activeFile) return;
+  notify(`✓ Saved ${state.activeFile}`);
+  // Flash the tab
+  const tab = document.querySelector(`.tab[data-file="${state.activeFile}"]`);
+  if (tab) {
+    tab.style.borderBottomColor = 'var(--accent3)';
+    setTimeout(() => { tab.style.borderBottomColor = ''; }, 600);
+  }
+}
 
-        function clearTerminal() {
-            terminalOutput.innerHTML = '';
-        }
+// ===================== PROBLEMS =====================
+function checkProblems() {
+  let count = 0;
+  if (state.activeFile) {
+    const val = state.files[state.activeFile];
+    // Naive checks
+    const unclosed = (val.match(/\{/g) || []).length - (val.match(/\}/g) || []).length;
+    if (unclosed !== 0) count++;
+    const unclosedP = (val.match(/\(/g) || []).length - (val.match(/\)/g) || []).length;
+    if (unclosedP !== 0) count++;
+  }
+  document.getElementById('prob-count').textContent = count;
+  document.getElementById('status-errors').innerHTML = `⚠️ ${count} errors`;
+}
 
-        // --- Global Events ---
-        window.addEventListener('resize', syncScroll);
-        
-        window.addEventListener('keydown', (e) => {
-            // Global Save (Ctrl+S / Cmd+S)
-            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-                e.preventDefault();
-                saveCurrentFile();
-                const btn = document.querySelector('[data-lucide="refresh-cw"]').parentElement;
-                const originalText = btn.innerHTML;
-                btn.innerHTML = `<i data-lucide="check" class="w-3 h-3 text-green-300"></i> Saved`;
-                lucide.createIcons();
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
-                }, 2000);
-            }
-        });
+// ===================== TERMINAL =====================
+const termOutputs = {
+  'ls': () => Object.keys(state.files).join('  '),
+  'pwd': () => '/home/cowboy/YSCode',
+  'whoami': () => 'cowboy',
+  'date': () => new Date().toString(),
+  'node -v': () => 'v20.11.0',
+  'npm -v': () => '10.2.4',
+  'git status': () => 'On branch main\nnothing to commit, working tree clean',
+  'git log --oneline': () => 'a1b2c3d init YSCode 🤠\nb2c3d4e add styles\nc3d4e5f initial commit',
+  'clear': () => { document.getElementById('terminal').innerHTML = ''; return null; },
+  'help': () => 'Available commands: ls, pwd, whoami, date, node -v, npm -v, git status, git log --oneline, clear, run, cat [file]',
+  'run': () => { runCode(); return '▶ Running...'; },
+  'yee': () => '🤠 HAW!',
+  'yeehaw': () => '🤠🤠🤠 YEEEE-HAWWW! 🤠🤠🤠',
+};
 
-        // Initialize App
-        window.onload = init;
-    </script>
-    <script src="script.js"></script>
+function termPrint(html, cls = '') {
+  const term = document.getElementById('terminal');
+  const line = document.createElement('div');
+  line.className = `term-line ${cls}`;
+  line.innerHTML = html;
+  term.appendChild(line);
+  term.scrollTop = term.scrollHeight;
+}
+
+function handleTermInput(e) {
+  const input = document.getElementById('term-input');
+
+  if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (state.termHistIdx < state.termHistory.length - 1) {
+      state.termHistIdx++;
+      input.value = state.termHistory[state.termHistory.length - 1 - state.termHistIdx];
+    }
+    return;
+  }
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (state.termHistIdx > 0) {
+      state.termHistIdx--;
+      input.value = state.termHistory[state.termHistory.length - 1 - state.termHistIdx];
+    } else {
+      state.termHistIdx = -1;
+      input.value = '';
+    }
+    return;
+  }
+
+  if (e.key !== 'Enter') return;
+
+  const cmd = input.value.trim();
+  input.value = '';
+  state.termHistIdx = -1;
+
+  if (!cmd) return;
+
+  state.termHistory.push(cmd);
+
+  termPrint(`<span class="term-prompt">ysc@YallStudioCode</span>:<span class="term-path">~/YSCode</span>$ <span style="color:var(--text-bright)">${cmd}</span>`);
+
+  // Handle cat command
+  if (cmd.startsWith('cat ')) {
+    const fname = cmd.slice(4).trim();
+    if (state.files[fname]) {
+      termPrint(`<pre style="color:var(--text-dim);font-size:11px;white-space:pre-wrap">${escHtml(state.files[fname])}</pre>`);
+    } else {
+      termPrint(`cat: ${fname}: No such file or directory`, 'term-error');
+    }
+    return;
+  }
+
+  // Handle echo
+  if (cmd.startsWith('echo ')) {
+    termPrint(escHtml(cmd.slice(5)), 'term-output');
+    return;
+  }
+
+  const handler = termOutputs[cmd.toLowerCase()];
+  if (handler) {
+    const out = handler();
+    if (out !== null && out !== undefined) {
+      termPrint(`<span class="term-output" style="white-space:pre-wrap">${escHtml(out)}</span>`);
+    }
+  } else {
+    termPrint(`<span class="term-error">ysc: command not found: ${escHtml(cmd)}</span><span class="term-output"> — Try 'help'</span>`);
+  }
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function switchPanel(name) {
+  document.querySelectorAll('.panel-tab').forEach((t,i) => {
+    t.classList.toggle('active', ['terminal','problems','output'][i] === name);
+  });
+  if (name === 'terminal') {
+    document.getElementById('term-input').focus();
+  }
+}
+
+function togglePanel() {
+  const panel = document.getElementById('panel');
+  state.panelVisible = !state.panelVisible;
+  panel.style.display = state.panelVisible ? '' : 'none';
+}
+
+function runCode() {
+  switchPanel('terminal');
+  termPrint(`<span class="term-prompt">ysc@YallStudioCode</span>:<span class="term-path">~/YSCode</span>$ <span style="color:var(--text-bright)">ysc run</span>`);
+  termPrint(`<span style="color:var(--accent3)">▶ Running ${state.activeFile || 'project'}...</span>`);
+  setTimeout(() => termPrint(`<span class="term-output">YSCode is alive! 🤠</span>`), 300);
+  setTimeout(() => termPrint(`<span class="term-output">Howdy, partner! Welcome to YallStudioCode.</span>`), 600);
+  setTimeout(() => termPrint(`<span style="color:var(--accent3)">✓ Process exited with code 0</span>`), 900);
+}
+
+// ===================== ACTIVITY BAR =====================
+function setActivity(name) {
+  const map = { explorer: 'act-explorer', search: 'act-search', git: 'act-git', run: 'act-run', extensions: 'act-ext' };
+  const panelMap = { explorer: 'panel-explorer', search: 'panel-search', git: 'panel-git', run: 'panel-run', extensions: 'panel-extensions' };
+
+  document.querySelectorAll('.act-btn').forEach(b => b.classList.remove('active'));
+  Object.values(panelMap).forEach(p => { const el = document.getElementById(p); if(el) el.style.display = 'none'; });
+
+  document.getElementById(map[name])?.classList.add('active');
+  const panel = document.getElementById(panelMap[name]);
+  if (panel) panel.style.display = '';
+
+  if (name === 'run') runCode();
+}
+
+// ===================== SEARCH =====================
+function doSearch(query) {
+  const results = document.getElementById('search-results');
+  if (!query) { results.textContent = 'Type to search...'; return; }
+  let found = [];
+  Object.entries(state.files).forEach(([name, content]) => {
+    const lines = content.split('\n');
+    lines.forEach((line, idx) => {
+      if (line.toLowerCase().includes(query.toLowerCase())) {
+        found.push(`<div class="tree-item" onclick="openFile('${name}')" style="font-size:11px">
+          ${getIcon(name)} <b>${name}</b>:${idx+1} — <span style="color:var(--text-dim)">${escHtml(line.trim().substring(0,40))}</span>
+        </div>`);
+      }
+    });
+  });
+  results.innerHTML = found.length ? found.join('') : `<div style="color:var(--text-dim)">No results for "${escHtml(query)}"</div>`;
+}
+
+// ===================== NEW FILE / FOLDER =====================
+function newFile() {
+  const name = prompt('New file name:', 'untitled.js');
+  if (!name) return;
+  state.files[name] = `// ${name}\n`;
+  buildTree();
+  openFile(name);
+  notify(`Created ${name}`);
+}
+
+function newFolder() {
+  notify('Folder support coming soon! 🤠');
+}
+
+// ===================== CONTEXT MENU =====================
+let ctxTargetFile = null;
+
+function showCtxMenu(e, file) {
+  ctxTargetFile = file;
+  const menu = document.getElementById('ctx-menu');
+  menu.style.display = 'block';
+  menu.style.left = e.clientX + 'px';
+  menu.style.top = e.clientY + 'px';
+}
+
+document.addEventListener('click', () => {
+  document.getElementById('ctx-menu').style.display = 'none';
+});
+
+function ctxAction(action) {
+  const editor = document.getElementById('editor');
+  if (action === 'cut') document.execCommand('cut');
+  else if (action === 'copy') document.execCommand('copy');
+  else if (action === 'paste') document.execCommand('paste');
+  else if (action === 'format') { formatDocument(); }
+  else if (action === 'comment') { toggleComment(); }
+  else if (action === 'rename') {
+    const name = prompt('Rename to:', state.activeFile);
+    if (name && name !== state.activeFile) {
+      state.files[name] = state.files[state.activeFile];
+      delete state.files[state.activeFile];
+      const idx = state.openTabs.indexOf(state.activeFile);
+      if (idx !== -1) state.openTabs[idx] = name;
+      state.activeFile = name;
+      buildTree();
+      buildTabs();
+      notify(`Renamed to ${name}`);
+    }
+  }
+  else if (action === 'find') notify('Find references: feature coming soon!');
+}
+
+function formatDocument() {
+  notify('✨ Document formatted');
+}
+
+function toggleComment() {
+  const editor = document.getElementById('editor');
+  const start = editor.selectionStart;
+  const lineStart = editor.value.lastIndexOf('\n', start - 1) + 1;
+  const line = editor.value.substring(lineStart);
+  const firstLine = line.split('\n')[0];
+  const trimmed = firstLine.trimStart();
+  const isComment = trimmed.startsWith('//');
+  const newLine = isComment ? firstLine.replace(/^(\s*)\/\/\s?/, '$1') : firstLine.replace(/^(\s*)/, '$1// ');
+  editor.value = editor.value.substring(0, lineStart) + newLine + editor.value.substring(lineStart + firstLine.length);
+  onEditorInput();
+  notify('💬 Comment toggled');
+}
+
+// ===================== MENU ACTIONS =====================
+function menuAction(menu) {
+  const actions = {
+    file: () => {
+      const choice = ['New File', 'Open File', 'Save', 'Save All', 'Close Editor'];
+      notify('File menu: ' + choice[Math.floor(Math.random()*choice.length)]);
+    },
+    edit: () => notify('Edit menu opened'),
+    view: () => notify('Toggle: Sidebar / Panel / Minimap'),
+    run: () => runCode(),
+    terminal: () => { togglePanel(); notify('Terminal toggled'); },
+    help: () => notify('YallStudioCode v1.0.0 🤠 — Ride into the code!'),
+  };
+  actions[menu]?.();
+}
+
+// ===================== NOTIFICATIONS =====================
+function notify(msg) {
+  const notif = document.getElementById('notif');
+  const item = document.createElement('div');
+  item.className = 'notif-item';
+  item.textContent = msg;
+  notif.appendChild(item);
+  setTimeout(() => {
+    item.style.opacity = '0';
+    item.style.transform = 'translateX(100%)';
+    item.style.transition = 'all .3s';
+    setTimeout(() => item.remove(), 300);
+  }, 2500);
+}
+
+// ===================== SIDEBAR RESIZE =====================
+const resizer = document.getElementById('resizer-sidebar');
+let isResizing = false;
+resizer.addEventListener('mousedown', e => {
+  isResizing = true;
+  document.body.style.cursor = 'col-resize';
+});
+document.addEventListener('mousemove', e => {
+  if (!isResizing) return;
+  const sidebar = document.getElementById('sidebar');
+  const actbar = document.getElementById('activitybar');
+  const newW = e.clientX - actbar.offsetWidth - 4;
+  if (newW > 100 && newW < 400) sidebar.style.width = newW + 'px';
+});
+document.addEventListener('mouseup', () => {
+  isResizing = false;
+  document.body.style.cursor = '';
+});
+
+// ===================== INIT =====================
+buildTree();
+buildTabs();
+
+// Initial terminal welcome
+termPrint(`<span style="color:var(--accent);font-family:'Syne',sans-serif;font-weight:700">YallStudioCode Terminal</span> <span style="color:var(--text-dim)">v1.0.0 🤠</span>`);
+termPrint(`<span class="term-output">Type 'help' for available commands</span>`);
+termPrint(``);
+
+// Open first file by default
+openFile('index.html');
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveFile(); }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+    e.preventDefault();
+    const name = prompt('Open file:', Object.keys(state.files).join(', '));
+    if (name && state.files[name]) openFile(name);
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === '`') {
+    e.preventDefault();
+    togglePanel();
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+    e.preventDefault();
+    newFile();
+  }
+});
+</script>
 </body>
 </html>
