@@ -627,7 +627,7 @@
 <script>
 // ───────── STATE ─────────
 const state = {
-  files: {},          // path -> {name, content, dirty, lang}
+  files: {},          // path -> {name, content, dirty, lang, fileHandle}
   folders: {},        // path -> {name, children: [path], isFolder}
   rootPath: null,
   openTabs: [],
@@ -636,6 +636,8 @@ const state = {
   sidebarVisible: true,
   terminalVisible: false,
   contextTarget: null,
+  dirHandles: {},     // path -> FileSystemDirectoryHandle
+  fileHandles: {},    // path -> FileSystemFileHandle
 };
 
 // ───────── LANGUAGE DETECTION ─────────
@@ -662,17 +664,75 @@ function getIcon(name) {
 }
 
 // ───────── OPEN FOLDER ─────────
-function openFolder() {
+async function openFolder() {
+  // Try modern File System Access API first
+  if (window.showDirectoryPicker) {
+    try {
+      const dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+      await loadDirectoryHandle(dirHandle);
+      return;
+    } catch (err) {
+      if (err.name === 'AbortError') return; // user cancelled
+      // fall through to legacy
+    }
+  }
+  // Legacy fallback
   document.getElementById('file-input').click();
 }
+
+async function loadDirectoryHandle(dirHandle, parentPath, depth) {
+  if (!parentPath) {
+    // Root — reset state
+    state.files = {}; state.folders = {}; state.rootPath = null;
+    state.openTabs = []; state.activeTab = null;
+    state.dirHandles = {}; state.fileHandles = {};
+    renderTabs(); renderWelcome();
+  }
+  const name = dirHandle.name;
+  const path = parentPath ? `${parentPath}/${name}` : name;
+  if (!state.rootPath) state.rootPath = path;
+
+  state.folders[path] = { name, children: [], isFolder: true, depth: depth || 0 };
+  state.dirHandles[path] = dirHandle;
+
+  if (parentPath && state.folders[parentPath]) {
+    state.folders[parentPath].children.push(path);
+  }
+
+  for await (const [entryName, handle] of dirHandle.entries()) {
+    if (entryName.startsWith('.')) continue; // skip hidden
+    if (handle.kind === 'directory') {
+      await loadDirectoryHandle(handle, path, (depth || 0) + 1);
+    } else {
+      const filePath = `${path}/${entryName}`;
+      state.folders[path].children.push(filePath);
+      state.files[filePath] = {
+        name: entryName,
+        content: null,
+        dirty: false,
+        lang: getLang(entryName),
+        fileHandle: handle,  // ← real FileSystemFileHandle for writing
+        fileObj: null,
+      };
+      state.fileHandles[filePath] = handle;
+    }
+  }
+
+  if (!parentPath) {
+    renderTree();
+    updateTitlebar(name);
+  }
+}
+
+// Legacy <input> fallback
 document.getElementById('file-input').addEventListener('change', async function(e) {
   const files = Array.from(e.target.files);
   if (!files.length) return;
   state.files = {}; state.folders = {}; state.rootPath = null;
   state.openTabs = []; state.activeTab = null;
+  state.dirHandles = {}; state.fileHandles = {};
   renderTabs(); renderWelcome();
 
-  // Build tree structure
   const rootParts = files[0].webkitRelativePath.split('/');
   const rootName = rootParts[0];
   state.rootPath = rootName;
@@ -682,7 +742,6 @@ document.getElementById('file-input').addEventListener('change', async function(
     const parts = file.webkitRelativePath.split('/');
     const filePath = file.webkitRelativePath;
 
-    // Ensure all parent folders exist
     for (let i = 1; i < parts.length; i++) {
       const folderPath = parts.slice(0, i).join('/');
       const parentPath = parts.slice(0, i - 1).join('/') || rootName;
@@ -693,16 +752,16 @@ document.getElementById('file-input').addEventListener('change', async function(
       }
     }
 
-    // Add file
     const parentPath = parts.slice(0, -1).join('/');
     const parent = state.folders[parentPath];
     if (parent && !parent.children.includes(filePath)) parent.children.push(filePath);
 
     state.files[filePath] = {
       name: parts[parts.length - 1],
-      content: null, // lazy load
+      content: null,
       dirty: false,
       lang: getLang(parts[parts.length - 1]),
+      fileHandle: null,
       fileObj: file,
     };
   }
@@ -794,8 +853,15 @@ async function openFile(path) {
   state.activeTab = path;
 
   // Lazy load content
-  if (file.content === null && file.fileObj) {
-    file.content = await file.fileObj.text();
+  if (file.content === null) {
+    if (file.fileHandle) {
+      const f = await file.fileHandle.getFile();
+      file.content = await f.text();
+    } else if (file.fileObj) {
+      file.content = await file.fileObj.text();
+    } else {
+      file.content = '';
+    }
   }
 
   renderTabs();
@@ -978,31 +1044,97 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ───────── SAVE FILE ─────────
-function saveFile() {
+async function saveFile() {
   if (!state.activeTab) { newFile(); return; }
   const file = state.files[state.activeTab];
   if (!file) return;
-  const blob = new Blob([file.content || ''], {type: 'text/plain'});
+
+  // If we have a real file handle, write directly to disk
+  if (file.fileHandle) {
+    try {
+      const writable = await file.fileHandle.createWritable();
+      await writable.write(file.content || '');
+      await writable.close();
+      file.dirty = false;
+      renderTabs();
+      showToast(`✓ Saved: ${file.name}`);
+      return;
+    } catch (err) {
+      if (err.name === 'NotAllowedError') {
+        showToast('⚠ Permission denied — re-open the folder to allow writes');
+      } else {
+        showToast(`⚠ Save failed: ${err.message}`);
+      }
+      return;
+    }
+  }
+
+  // No file handle — offer Save As via File System Access API or download
+  if (window.showSaveFilePicker) {
+    try {
+      const ext = file.name.split('.').pop();
+      const handle = await window.showSaveFilePicker({
+        suggestedName: file.name,
+        types: [{ description: 'Text file', accept: { 'text/plain': ['.' + ext] } }],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(file.content || '');
+      await writable.close();
+      file.fileHandle = handle;  // remember for future Ctrl+S
+      file.dirty = false;
+      renderTabs();
+      showToast(`✓ Saved: ${file.name}`);
+      return;
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+    }
+  }
+
+  // Final fallback: download
+  const blob = new Blob([file.content || ''], { type: 'text/plain' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = file.name;
   a.click();
   file.dirty = false;
   renderTabs();
-  showToast(`Saved: ${file.name}`);
+  showToast(`Downloaded: ${file.name}`);
 }
 
-function saveFileAs() {
-  showModalPrompt('Save As', state.activeTab ? state.files[state.activeTab]?.name : 'untitled.txt', (name) => {
-    if (!state.activeTab) return;
-    const file = state.files[state.activeTab];
-    const blob = new Blob([file.content || ''], {type: 'text/plain'});
+async function saveFileAs() {
+  if (!state.activeTab) return;
+  const file = state.files[state.activeTab];
+  if (!file) return;
+
+  if (window.showSaveFilePicker) {
+    try {
+      const ext = file.name.split('.').pop();
+      const handle = await window.showSaveFilePicker({
+        suggestedName: file.name,
+        types: [{ description: 'Text file', accept: { 'text/plain': ['.' + ext] } }],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(file.content || '');
+      await writable.close();
+      file.fileHandle = handle;
+      file.dirty = false;
+      renderTabs();
+      showToast(`✓ Saved as: ${handle.name}`);
+      return;
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+    }
+  }
+
+  // Fallback: download with renamed file
+  showModalPrompt('Save As', file.name, (name) => {
+    if (!name) return;
+    const blob = new Blob([file.content || ''], { type: 'text/plain' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = name;
     a.click();
-    file.dirty = false;
-    renderTabs();
+    showToast(`Downloaded: ${name}`);
   });
 }
 
@@ -1037,7 +1169,7 @@ document.getElementById('single-file-input').addEventListener('change', async fu
     const path = file.name;
     state.files[path] = {
       name: file.name, content: await file.text(),
-      dirty: false, lang: getLang(file.name), fileObj: null,
+      dirty: false, lang: getLang(file.name), fileHandle: null, fileObj: null,
     };
     openFile(path);
   }
@@ -1052,7 +1184,7 @@ document.getElementById('editors-container').addEventListener('drop', async e =>
     const path = file.name;
     state.files[path] = {
       name: file.name, content: await file.text(),
-      dirty: false, lang: getLang(file.name), fileObj: null,
+      dirty: false, lang: getLang(file.name), fileHandle: null, fileObj: null,
     };
     openFile(path);
   }
