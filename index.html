@@ -3,603 +3,418 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>YallStudioCode</title>
+<title>YSCode - YallStudio Code</title>
 <link rel="icon" href="icon.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0f0f10;
-    --sidebar-bg: #161618;
-    --tab-bg: #1a1a1c;
-    --editor-bg: #111113;
-    --panel-bg: #141416;
-    --border: #2a2a2e;
-    --accent: #f5a623;
-    --accent2: #e85d4a;
-    --accent3: #4af0a0;
-    --text: #d4d4d8;
-    --text-dim: #71717a;
-    --text-bright: #fafafa;
-    --line-num: #3f3f46;
-    --selection: rgba(245,166,35,0.15);
-    --hover: rgba(255,255,255,0.04);
-    --active: rgba(245,166,35,0.08);
-  }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  html, body { height:100%; overflow:hidden; }
-  body {
-    font-family: 'JetBrains Mono', monospace;
-    background: var(--bg);
-    color: var(--text);
-    display:flex;
-    flex-direction:column;
-    height:100vh;
-    user-select:none;
+    --bg-darkest: #0d0d0f;
+    --bg-dark: #141416;
+    --bg-mid: #1a1a1e;
+    --bg-panel: #1e1e22;
+    --bg-hover: #2a2a30;
+    --bg-active: #2d2d34;
+    --border: #2e2e36;
+    --accent: #f0a500;
+    --accent2: #e06c75;
+    --accent3: #61afef;
+    --accent4: #98c379;
+    --accent5: #c678dd;
+    --text-bright: #f0f0f5;
+    --text-main: #c0c0cc;
+    --text-dim: #6b6b7a;
+    --text-dimmer: #44444f;
+    --tab-active: #1e1e22;
+    --scrollbar: #2e2e36;
+    --font-code: 'JetBrains Mono', monospace;
+    --font-ui: 'Syne', sans-serif;
   }
 
-  /* TITLE BAR */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-ui);
+    background: var(--bg-darkest);
+    color: var(--text-main);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+  }
+
+  /* ── TITLE BAR ── */
   #titlebar {
-    height: 38px;
-    background: var(--bg);
+    height: 30px;
+    background: var(--bg-darkest);
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
     padding: 0 12px;
-    gap: 12px;
+    gap: 8px;
     flex-shrink: 0;
     -webkit-app-region: drag;
   }
   #titlebar .logo {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 13px;
+    display: flex; align-items: center; gap: 6px;
+    font-weight: 800; font-size: 12px; letter-spacing: 0.05em;
     color: var(--accent);
-    letter-spacing: 0.5px;
   }
-  #titlebar .logo img { width:18px; height:18px; object-fit:contain; }
+  #titlebar .logo img { width: 16px; height: 16px; object-fit: contain; }
   #titlebar .logo span { color: var(--text-bright); }
-  #titlebar .logo span em { color: var(--accent); font-style:normal; }
-  .menu-bar {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    margin-left: 8px;
+  #titlebar .logo span b { color: var(--accent); }
+  #menu-bar {
+    display: flex; gap: 2px; margin-left: 8px;
     -webkit-app-region: no-drag;
   }
-  .menu-bar button {
-    background: none;
-    border: none;
-    color: var(--text-dim);
-    font-size: 12px;
-    padding: 4px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-family: 'Syne', sans-serif;
-    transition: all .15s;
-  }
-  .menu-bar button:hover { background: var(--hover); color: var(--text-bright); }
-  .title-center {
-    flex: 1;
-    text-align: center;
-    font-size: 11px;
-    color: var(--text-dim);
-    font-family: 'Syne', sans-serif;
-  }
-  .win-controls {
-    display: flex;
-    gap: 6px;
-    -webkit-app-region: no-drag;
-  }
-  .win-btn {
-    width: 12px; height: 12px;
-    border-radius: 50%;
-    border: none;
-    cursor: pointer;
-  }
-  .win-close { background: #ff5f57; }
-  .win-min { background: #febc2e; }
-  .win-max { background: #28c840; }
-
-  /* MAIN LAYOUT */
-  #app { display:flex; flex:1; overflow:hidden; }
-
-  /* ACTIVITY BAR */
-  #activitybar {
-    width: 48px;
-    background: var(--sidebar-bg);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 8px 0;
-    gap: 2px;
-    flex-shrink: 0;
-  }
-  .act-btn {
-    width: 36px; height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 6px;
-    cursor: pointer;
-    color: var(--text-dim);
-    font-size: 18px;
-    transition: all .15s;
+  .menu-item {
+    font-size: 12px; color: var(--text-main); cursor: pointer;
+    padding: 4px 8px; border-radius: 4px; font-family: var(--font-ui);
     position: relative;
   }
-  .act-btn:hover { color: var(--text-bright); background: var(--hover); }
-  .act-btn.active { color: var(--accent); background: var(--active); }
-  .act-btn.active::before {
-    content: '';
-    position: absolute;
-    left: -4px;
-    width: 3px;
-    height: 60%;
-    background: var(--accent);
-    border-radius: 0 2px 2px 0;
+  .menu-item:hover { background: var(--bg-hover); color: var(--text-bright); }
+  .menu-dropdown {
+    display: none; position: absolute; top: 100%; left: 0;
+    background: var(--bg-panel); border: 1px solid var(--border);
+    border-radius: 6px; min-width: 180px; z-index: 1000;
+    padding: 4px; box-shadow: 0 8px 24px rgba(0,0,0,0.6);
   }
-  #activitybar .spacer { flex:1; }
+  .menu-item:hover .menu-dropdown,
+  .menu-item.open .menu-dropdown { display: block; }
+  .menu-dropdown-item {
+    padding: 6px 12px; font-size: 12px; border-radius: 4px;
+    cursor: pointer; display: flex; justify-content: space-between;
+    gap: 24px; white-space: nowrap;
+  }
+  .menu-dropdown-item:hover { background: var(--bg-hover); color: var(--text-bright); }
+  .menu-dropdown-item .shortcut { color: var(--text-dim); }
+  .menu-sep { height: 1px; background: var(--border); margin: 3px 0; }
+  #titlebar-title {
+    flex: 1; text-align: center; font-size: 11px;
+    color: var(--text-dim); letter-spacing: 0.03em;
+  }
 
-  /* SIDEBAR */
+  /* ── ACTIVITY BAR ── */
+  #activity-bar {
+    width: 48px; background: var(--bg-dark);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; align-items: center;
+    padding: 4px 0; gap: 2px; flex-shrink: 0;
+  }
+  .activity-btn {
+    width: 40px; height: 40px; display: flex; align-items: center;
+    justify-content: center; cursor: pointer; border-radius: 6px;
+    color: var(--text-dim); transition: color 0.15s, background 0.15s;
+    font-size: 20px; position: relative;
+  }
+  .activity-btn:hover { color: var(--text-bright); background: var(--bg-hover); }
+  .activity-btn.active { color: var(--text-bright); background: var(--bg-active); }
+  .activity-btn.active::before {
+    content: ''; position: absolute; left: 0; top: 50%;
+    transform: translateY(-50%); width: 2px; height: 20px;
+    background: var(--accent); border-radius: 0 2px 2px 0;
+  }
+  #activity-bar .spacer { flex: 1; }
+
+  /* ── MAIN LAYOUT ── */
+  #workbench {
+    display: flex; flex: 1; overflow: hidden;
+  }
+
+  /* ── SIDEBAR ── */
   #sidebar {
-    width: 220px;
-    background: var(--sidebar-bg);
+    width: 240px; background: var(--bg-dark);
     border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    flex-shrink: 0;
+    display: flex; flex-direction: column; flex-shrink: 0;
     overflow: hidden;
   }
-  .sidebar-header {
+  #sidebar-header {
     padding: 10px 12px 6px;
-    font-family: 'Syne', sans-serif;
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--text-dim);
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--text-dim);
+    display: flex; justify-content: space-between; align-items: center;
   }
-  .sidebar-header .icon-btn {
-    background: none; border: none;
-    color: var(--text-dim);
-    cursor: pointer; font-size: 14px;
-    padding: 2px 4px; border-radius: 3px;
+  #sidebar-header .sidebar-actions { display: flex; gap: 4px; }
+  .sidebar-icon-btn {
+    width: 22px; height: 22px; display: flex; align-items: center;
+    justify-content: center; cursor: pointer; border-radius: 4px;
+    color: var(--text-dim); font-size: 14px;
+    transition: color 0.15s, background 0.15s;
   }
-  .sidebar-header .icon-btn:hover { color: var(--text-bright); background: var(--hover); }
-  #file-tree { flex:1; overflow-y:auto; padding: 4px 0; }
+  .sidebar-icon-btn:hover { color: var(--text-bright); background: var(--bg-hover); }
+  #file-tree {
+    flex: 1; overflow-y: auto; padding: 4px 0;
+  }
   #file-tree::-webkit-scrollbar { width: 4px; }
-  #file-tree::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-  .tree-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 3px 8px 3px 16px;
-    font-size: 12.5px;
-    cursor: pointer;
-    border-radius: 4px;
-    margin: 0 4px;
-    transition: background .1s;
-    white-space: nowrap;
-  }
-  .tree-item:hover { background: var(--hover); }
-  .tree-item.active { background: var(--active); color: var(--text-bright); }
-  .tree-item .fi { font-size: 13px; }
-  .tree-folder {
-    padding-left: 8px;
-    font-weight: 600;
-    color: var(--text-bright);
-    font-family: 'Syne', sans-serif;
-  }
-  .tree-folder .arrow { font-size: 10px; color: var(--text-dim); transition: transform .15s; }
-  .tree-folder.open .arrow { transform: rotate(90deg); }
+  #file-tree::-webkit-scrollbar-track { background: transparent; }
+  #file-tree::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 2px; }
 
-  /* EDITOR AREA */
+  .tree-empty {
+    padding: 20px 16px; font-size: 12px; color: var(--text-dim);
+    line-height: 1.6;
+  }
+  .tree-empty .open-btn {
+    display: inline-block; margin-top: 10px; padding: 6px 12px;
+    background: var(--accent); color: var(--bg-darkest);
+    border-radius: 5px; font-size: 11px; font-weight: 700;
+    cursor: pointer; font-family: var(--font-ui);
+    transition: opacity 0.15s;
+  }
+  .tree-empty .open-btn:hover { opacity: 0.85; }
+
+  .tree-folder, .tree-file {
+    display: flex; align-items: center; gap: 4px;
+    padding: 2px 0; cursor: pointer; border-radius: 3px;
+    font-size: 13px; font-family: var(--font-code);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .tree-folder:hover, .tree-file:hover { background: var(--bg-hover); }
+  .tree-file.active { background: var(--bg-active); color: var(--text-bright); }
+  .tree-icon { flex-shrink: 0; font-size: 14px; }
+  .tree-name { overflow: hidden; text-overflow: ellipsis; }
+  .tree-children { display: none; }
+  .tree-children.open { display: block; }
+
+  /* ── EDITOR AREA ── */
   #editor-area {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    background: var(--editor-bg);
+    flex: 1; display: flex; flex-direction: column; overflow: hidden;
+    background: var(--bg-mid);
   }
 
-  /* TABS */
-  #tabs {
-    height: 36px;
-    background: var(--tab-bg);
+  /* ── TABS ── */
+  #tabs-bar {
+    height: 35px; background: var(--bg-dark);
     border-bottom: 1px solid var(--border);
-    display: flex;
+    display: flex; overflow-x: auto; flex-shrink: 0;
     align-items: flex-end;
-    overflow-x: auto;
-    flex-shrink: 0;
   }
-  #tabs::-webkit-scrollbar { height: 0; }
+  #tabs-bar::-webkit-scrollbar { height: 2px; }
+  #tabs-bar::-webkit-scrollbar-thumb { background: var(--scrollbar); }
   .tab {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0 14px;
-    height: 34px;
-    font-size: 12px;
-    cursor: pointer;
-    border-right: 1px solid var(--border);
-    color: var(--text-dim);
-    white-space: nowrap;
-    transition: all .15s;
-    position: relative;
-    flex-shrink: 0;
+    height: 35px; display: flex; align-items: center; gap: 6px;
+    padding: 0 12px; font-size: 12px; font-family: var(--font-code);
+    cursor: pointer; border-right: 1px solid var(--border);
+    color: var(--text-dim); flex-shrink: 0;
+    position: relative; transition: color 0.1s, background 0.1s;
+    min-width: 80px; max-width: 160px;
   }
-  .tab:hover { background: var(--hover); color: var(--text); }
+  .tab:hover { background: var(--bg-hover); color: var(--text-main); }
   .tab.active {
-    background: var(--editor-bg);
-    color: var(--text-bright);
-    border-bottom: 2px solid var(--accent);
+    background: var(--tab-active); color: var(--text-bright);
+    border-top: 1px solid var(--accent);
   }
-  .tab .close {
-    font-size: 14px; opacity: 0;
-    transition: opacity .15s;
-    width: 16px; height: 16px;
-    display: flex; align-items:center; justify-content:center;
-    border-radius: 3px;
+  .tab-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tab-close {
+    font-size: 14px; opacity: 0; transition: opacity 0.1s;
+    border-radius: 3px; padding: 1px 2px; flex-shrink: 0;
   }
-  .tab:hover .close { opacity: 0.6; }
-  .tab .close:hover { opacity: 1; background: rgba(255,255,255,0.1); }
-  .tab-icon { font-size: 13px; }
-  .tab-new {
-    padding: 0 12px;
-    height: 34px;
-    display: flex; align-items:center;
-    cursor: pointer;
-    color: var(--text-dim);
-    font-size: 18px;
-    transition: all .15s;
-  }
-  .tab-new:hover { color: var(--text-bright); background: var(--hover); }
+  .tab:hover .tab-close, .tab.active .tab-close { opacity: 0.6; }
+  .tab-close:hover { opacity: 1 !important; background: var(--bg-hover); }
+  .tab-icon { font-size: 13px; flex-shrink: 0; }
+  .tab-dirty { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; flex-shrink: 0; }
 
-  /* EDITOR CONTENT */
-  #editor-wrapper {
-    flex: 1;
-    display: flex;
-    overflow: hidden;
+  /* ── EDITOR WELCOME ── */
+  #welcome {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: var(--text-dim);
   }
-  #line-numbers {
-    width: 50px;
-    background: var(--editor-bg);
-    padding: 16px 0;
-    text-align: right;
-    font-size: 13px;
-    line-height: 1.65;
-    color: var(--line-num);
-    flex-shrink: 0;
-    overflow: hidden;
-    padding-right: 12px;
-    border-right: 1px solid var(--border);
+  #welcome .welcome-logo { font-size: 64px; margin-bottom: 16px; opacity: 0.15; }
+  #welcome h2 {
+    font-family: var(--font-ui); font-size: 28px; font-weight: 800;
+    color: var(--text-bright); opacity: 0.4; letter-spacing: -0.02em;
+  }
+  #welcome h2 span { color: var(--accent); }
+  #welcome p { font-size: 13px; margin-top: 8px; opacity: 0.5; }
+  #welcome .shortcuts {
+    margin-top: 32px; display: flex; flex-direction: column; gap: 8px;
+    font-size: 12px; font-family: var(--font-code);
+  }
+  #welcome .shortcut-row { display: flex; gap: 12px; align-items: center; }
+  #welcome .shortcut-row kbd {
+    background: var(--bg-panel); border: 1px solid var(--border);
+    padding: 2px 6px; border-radius: 4px; font-family: var(--font-code);
+    font-size: 11px;
+  }
+
+  /* ── CODE EDITOR ── */
+  #editors-container { flex: 1; position: relative; overflow: hidden; }
+  .editor-pane {
+    position: absolute; inset: 0; display: none; flex-direction: column;
+  }
+  .editor-pane.visible { display: flex; }
+  .editor-inner {
+    flex: 1; display: flex; overflow: hidden;
+  }
+  .line-numbers {
+    background: var(--bg-mid); color: var(--text-dimmer);
+    font-family: var(--font-code); font-size: 13px; line-height: 20px;
+    padding: 8px 12px 8px 8px; text-align: right; flex-shrink: 0;
+    overflow: hidden; white-space: pre; min-width: 48px;
+    border-right: 1px solid var(--border); pointer-events: none;
     user-select: none;
   }
-  #editor {
-    flex: 1;
-    background: var(--editor-bg);
-    color: var(--text);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    line-height: 1.65;
-    padding: 16px 16px;
-    border: none;
-    outline: none;
-    resize: none;
-    tab-size: 2;
-    overflow: auto;
-    white-space: pre;
-    caret-color: var(--accent);
-    user-select: text;
+  .code-area {
+    flex: 1; background: var(--bg-mid); color: var(--text-main);
+    font-family: var(--font-code); font-size: 13px; line-height: 20px;
+    padding: 8px 16px; border: none; outline: none; resize: none;
+    overflow-y: auto; overflow-x: auto; caret-color: var(--accent);
+    white-space: pre; tab-size: 2;
   }
-  #editor::-webkit-scrollbar { width: 8px; height: 8px; }
-  #editor::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-  #editor::selection { background: var(--selection); }
-
-  /* SYNTAX HIGHLIGHT OVERLAY */
-  #highlight-view {
-    position: absolute;
-    pointer-events: none;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    line-height: 1.65;
-    padding: 16px 16px;
-    white-space: pre;
-    word-wrap: normal;
-    top: 0; left: 0; right: 0;
-    color: transparent;
-  }
-
-  /* BOTTOM PANEL */
-  #panel {
-    height: 160px;
-    background: var(--panel-bg);
-    border-top: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
+  .code-area::-webkit-scrollbar { width: 8px; height: 8px; }
+  .code-area::-webkit-scrollbar-track { background: var(--bg-mid); }
+  .code-area::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 4px; }
+  .code-area::selection { background: rgba(240,165,0,0.2); }
+  .editor-breadcrumb {
+    height: 22px; background: var(--bg-panel); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 12px; gap: 4px;
+    font-size: 11px; font-family: var(--font-code); color: var(--text-dim);
     flex-shrink: 0;
   }
-  .panel-tabs {
-    display: flex;
-    border-bottom: 1px solid var(--border);
-    height: 30px;
-    align-items: center;
-  }
-  .panel-tab {
-    padding: 0 14px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    font-size: 11px;
-    font-family: 'Syne', sans-serif;
-    font-weight: 600;
-    cursor: pointer;
-    color: var(--text-dim);
-    letter-spacing: 0.5px;
-    transition: all .15s;
-    border-bottom: 2px solid transparent;
-  }
-  .panel-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-  .panel-tab:hover:not(.active) { color: var(--text); }
-  #terminal {
-    flex: 1;
-    padding: 8px 14px;
-    font-size: 12px;
-    overflow-y: auto;
-    color: var(--text);
-  }
-  #terminal::-webkit-scrollbar { width: 4px; }
-  #terminal::-webkit-scrollbar-thumb { background: var(--border); }
-  .term-line { line-height: 1.7; }
-  .term-prompt { color: var(--accent3); }
-  .term-path { color: var(--accent); }
-  .term-output { color: var(--text-dim); }
-  .term-error { color: var(--accent2); }
-  #term-input-line {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 0 14px 8px;
-  }
-  .term-input-prompt { color: var(--accent3); font-size: 12px; white-space: nowrap; }
-  #term-input {
-    flex: 1;
-    background: none;
-    border: none;
-    color: var(--text-bright);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    outline: none;
-    caret-color: var(--accent);
-  }
+  .breadcrumb-sep { color: var(--text-dimmer); }
 
-  /* STATUS BAR */
+  /* ── STATUS BAR ── */
   #statusbar {
-    height: 24px;
-    background: var(--accent);
-    display: flex;
-    align-items: center;
-    padding: 0 12px;
-    gap: 16px;
-    flex-shrink: 0;
+    height: 22px; background: var(--accent);
+    display: flex; align-items: center; padding: 0 12px;
+    gap: 16px; flex-shrink: 0;
   }
-  .status-item {
+  #statusbar .status-item {
+    font-size: 11px; color: var(--bg-darkest); font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; gap: 4px;
+    font-family: var(--font-ui);
+  }
+  #statusbar .status-item:hover { opacity: 0.75; }
+  #statusbar .spacer { flex: 1; }
+  #statusbar .status-right { display: flex; gap: 16px; }
+
+  /* ── TERMINAL ── */
+  #terminal-panel {
+    height: 180px; background: var(--bg-darkest);
+    border-top: 1px solid var(--border); flex-shrink: 0;
+    display: none; flex-direction: column;
+  }
+  #terminal-panel.visible { display: flex; }
+  #terminal-header {
+    height: 30px; background: var(--bg-dark); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 12px; gap: 8px;
+    font-size: 11px; font-family: var(--font-ui);
+  }
+  .terminal-tab { 
+    padding: 4px 10px; border-radius: 4px; cursor: pointer;
     font-size: 11px;
-    font-family: 'Syne', sans-serif;
-    font-weight: 600;
-    color: #000;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    opacity: 0.85;
-    cursor: pointer;
   }
-  .status-item:hover { opacity: 1; }
-  .status-right { margin-left: auto; display:flex; gap:16px; }
-  #status-cursor { margin-left: auto; }
-
-  /* WELCOME SCREEN */
-  #welcome {
-    flex:1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 24px;
-    padding: 40px;
+  .terminal-tab.active { background: var(--bg-active); color: var(--text-bright); }
+  #terminal-close {
+    margin-left: auto; cursor: pointer; color: var(--text-dim);
+    font-size: 16px; width: 22px; height: 22px; display: flex;
+    align-items: center; justify-content: center; border-radius: 4px;
   }
-  .welcome-logo {
-    font-family: 'Syne', sans-serif;
-    font-size: 42px;
-    font-weight: 800;
-    color: var(--text-bright);
-    letter-spacing: -1px;
+  #terminal-close:hover { background: var(--bg-hover); color: var(--text-bright); }
+  #terminal-output {
+    flex: 1; overflow-y: auto; padding: 8px 12px;
+    font-family: var(--font-code); font-size: 12px; line-height: 18px;
+    color: var(--text-main);
   }
-  .welcome-logo span { color: var(--accent); }
-  .welcome-sub {
-    font-size: 13px;
-    color: var(--text-dim);
-    font-family: 'Syne', sans-serif;
+  #terminal-output::-webkit-scrollbar { width: 4px; }
+  #terminal-output::-webkit-scrollbar-thumb { background: var(--scrollbar); }
+  #terminal-input-row {
+    display: flex; align-items: center; padding: 4px 12px 8px;
+    gap: 6px; font-family: var(--font-code); font-size: 12px;
   }
-  .welcome-actions {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  .welcome-btn {
-    background: var(--hover);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'Syne', sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    padding: 10px 20px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all .15s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .welcome-btn:hover {
-    background: var(--active);
-    border-color: var(--accent);
-    color: var(--accent);
+  #terminal-prompt { color: var(--accent4); }
+  #terminal-input {
+    flex: 1; background: transparent; border: none; outline: none;
+    color: var(--text-bright); font-family: var(--font-code); font-size: 12px;
+    caret-color: var(--accent);
   }
 
-  /* SEARCH PANEL */
-  #search-panel {
-    padding: 10px;
-    display: none;
-  }
-  #search-panel.active { display: block; }
-  .search-input-wrap {
-    display: flex;
-    align-items: center;
-    background: var(--editor-bg);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 4px 8px;
-    gap: 6px;
-    margin-bottom: 8px;
-  }
-  .search-input-wrap input {
-    background: none;
-    border: none;
-    color: var(--text);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    outline: none;
-    flex:1;
-  }
-  .search-input-wrap span { color: var(--text-dim); font-size: 13px; }
-  .search-results { font-size: 11px; color: var(--text-dim); padding: 4px; }
-
-  /* MINIMAP */
-  #minimap {
-    width: 60px;
-    background: rgba(0,0,0,0.2);
-    border-left: 1px solid var(--border);
-    overflow: hidden;
-    opacity: 0.4;
-    flex-shrink: 0;
-    font-size: 3px;
-    line-height: 1.65;
-    padding: 16px 4px;
-    color: var(--text-dim);
-    white-space: pre;
-    pointer-events: none;
-  }
-
-  /* CONTEXT MENU */
+  /* ── CONTEXT MENU ── */
   #ctx-menu {
-    position: fixed;
-    background: var(--sidebar-bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 4px;
-    z-index: 9999;
-    display: none;
-    min-width: 160px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    display: none; position: fixed; z-index: 9999;
+    background: var(--bg-panel); border: 1px solid var(--border);
+    border-radius: 6px; padding: 4px; min-width: 160px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6); font-size: 12px;
   }
   .ctx-item {
-    padding: 6px 12px;
-    font-size: 12px;
-    cursor: pointer;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: background .1s;
-    font-family: 'Syne', sans-serif;
+    padding: 6px 10px; border-radius: 4px; cursor: pointer;
+    display: flex; justify-content: space-between; gap: 16px;
   }
-  .ctx-item:hover { background: var(--hover); color: var(--text-bright); }
-  .ctx-sep { height: 1px; background: var(--border); margin: 4px; }
-  .ctx-item .key { margin-left:auto; color: var(--text-dim); font-size: 10px; }
+  .ctx-item:hover { background: var(--bg-hover); color: var(--text-bright); }
+  .ctx-sep { height: 1px; background: var(--border); margin: 3px 0; }
 
-  /* TOOLTIPS */
-  .tooltip {
-    position: absolute;
-    left: 52px;
-    background: var(--sidebar-bg);
-    color: var(--text-bright);
-    font-size: 11px;
-    font-family: 'Syne', sans-serif;
-    padding: 4px 8px;
-    border-radius: 4px;
-    white-space: nowrap;
-    pointer-events: none;
-    opacity: 0;
-    border: 1px solid var(--border);
-    z-index: 100;
-    transition: opacity .1s;
+  /* ── MODAL ── */
+  #modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 9998;
+    background: rgba(0,0,0,0.7); align-items: flex-start; justify-content: center;
+    padding-top: 100px;
   }
-  .act-btn:hover .tooltip { opacity: 1; }
+  #modal-overlay.visible { display: flex; }
+  #modal {
+    background: var(--bg-panel); border: 1px solid var(--border);
+    border-radius: 10px; width: 500px; padding: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+  }
+  #modal h3 { font-size: 14px; color: var(--text-bright); margin-bottom: 12px; }
+  #modal input {
+    width: 100%; background: var(--bg-dark); border: 1px solid var(--border);
+    color: var(--text-bright); padding: 8px 12px; border-radius: 6px;
+    font-family: var(--font-code); font-size: 13px; outline: none;
+  }
+  #modal input:focus { border-color: var(--accent); }
+  #modal .modal-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+  #modal button {
+    padding: 7px 16px; border-radius: 5px; font-size: 12px;
+    font-family: var(--font-ui); font-weight: 600; cursor: pointer; border: none;
+  }
+  #modal .btn-primary { background: var(--accent); color: var(--bg-darkest); }
+  #modal .btn-secondary { background: var(--bg-hover); color: var(--text-main); }
+  #modal button:hover { opacity: 0.85; }
 
-  /* NOTIFICATIONS */
-  #notif {
-    position: fixed;
-    bottom: 32px;
-    right: 16px;
-    z-index: 999;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    pointer-events: none;
+  /* ── RESIZER ── */
+  #sidebar-resizer {
+    width: 4px; background: transparent; cursor: col-resize;
+    flex-shrink: 0; transition: background 0.2s;
   }
-  .notif-item {
-    background: var(--sidebar-bg);
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--accent);
-    border-radius: 6px;
-    padding: 10px 14px;
-    font-size: 12px;
-    font-family: 'Syne', sans-serif;
-    color: var(--text);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-    animation: slideIn .3s ease forwards;
-    max-width: 280px;
-  }
-  @keyframes slideIn {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-  }
+  #sidebar-resizer:hover { background: var(--accent); }
 
-  /* RESIZER */
-  .resizer {
-    width: 4px;
-    background: transparent;
-    cursor: col-resize;
-    flex-shrink: 0;
-    transition: background .15s;
+  /* ── SEARCH PANEL ── */
+  #search-panel {
+    flex: 1; overflow-y: auto; padding: 8px;
   }
-  .resizer:hover { background: var(--accent); opacity: 0.4; }
+  .search-input-wrap {
+    position: relative; margin-bottom: 8px;
+  }
+  .search-input-wrap input {
+    width: 100%; background: var(--bg-mid); border: 1px solid var(--border);
+    color: var(--text-bright); padding: 6px 10px; border-radius: 5px;
+    font-family: var(--font-code); font-size: 12px; outline: none;
+  }
+  .search-input-wrap input:focus { border-color: var(--accent); }
+  .search-result {
+    padding: 4px 8px; border-radius: 4px; cursor: pointer;
+    font-family: var(--font-code); font-size: 11px; line-height: 1.6;
+  }
+  .search-result:hover { background: var(--bg-hover); }
+  .search-result .file-name { color: var(--accent3); font-weight: 500; }
+  .search-result .match { color: var(--text-main); }
+  .search-result mark { background: rgba(240,165,0,0.3); color: var(--accent); border-radius: 2px; }
 
-  /* BREADCRUMB */
-  #breadcrumb {
-    height: 26px;
-    background: var(--editor-bg);
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    padding: 0 12px;
-    gap: 6px;
-    font-size: 11px;
-    color: var(--text-dim);
-    font-family: 'Syne', sans-serif;
-    flex-shrink: 0;
-  }
-  #breadcrumb .bc-sep { color: var(--border); }
-  #breadcrumb .bc-current { color: var(--text); }
+  /* sidebar panel visibility */
+  .sidebar-panel { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+  .sidebar-panel.active { display: flex; }
+
+  /* Syntax token colors - applied via JS */
+  .tok-keyword { color: #c678dd; }
+  .tok-string { color: #98c379; }
+  .tok-comment { color: #5c6370; font-style: italic; }
+  .tok-number { color: #d19a66; }
+  .tok-function { color: #61afef; }
+  .tok-tag { color: #e06c75; }
+  .tok-attr { color: #d19a66; }
+  .tok-operator { color: #56b6c2; }
 </style>
 </head>
 <body>
@@ -608,753 +423,851 @@
 <div id="titlebar">
   <div class="logo">
     <img src="icon.png" alt="YSCode" onerror="this.style.display='none'">
-    <span><em>Y</em>all<em>S</em>tudio<em>C</em>ode</span>
+    <b>YS</b><span>Code</span>
   </div>
-  <div class="menu-bar">
-    <button onclick="menuAction('file')">File</button>
-    <button onclick="menuAction('edit')">Edit</button>
-    <button onclick="menuAction('view')">View</button>
-    <button onclick="menuAction('run')">Run</button>
-    <button onclick="menuAction('terminal')">Terminal</button>
-    <button onclick="menuAction('help')">Help</button>
-  </div>
-  <div class="title-center" id="title-center">YallStudioCode — ysc.workspace</div>
-  <div class="win-controls">
-    <button class="win-btn win-close" title="Close"></button>
-    <button class="win-btn win-min" title="Minimize"></button>
-    <button class="win-btn win-max" title="Maximize"></button>
-  </div>
+  <nav id="menu-bar">
+    <div class="menu-item" onclick="toggleMenu(this)">File
+      <div class="menu-dropdown">
+        <div class="menu-dropdown-item" onclick="openFolder()">Open Folder… <span class="shortcut">Ctrl+K O</span></div>
+        <div class="menu-dropdown-item" onclick="newFile()">New File <span class="shortcut">Ctrl+N</span></div>
+        <div class="menu-sep"></div>
+        <div class="menu-dropdown-item" onclick="saveFile()">Save <span class="shortcut">Ctrl+S</span></div>
+        <div class="menu-dropdown-item" onclick="saveFileAs()">Save As… <span class="shortcut">Ctrl+Shift+S</span></div>
+        <div class="menu-sep"></div>
+        <div class="menu-dropdown-item" onclick="closeTab()">Close Tab <span class="shortcut">Ctrl+W</span></div>
+      </div>
+    </div>
+    <div class="menu-item" onclick="toggleMenu(this)">Edit
+      <div class="menu-dropdown">
+        <div class="menu-dropdown-item" onclick="document.execCommand('undo')">Undo <span class="shortcut">Ctrl+Z</span></div>
+        <div class="menu-dropdown-item" onclick="document.execCommand('redo')">Redo <span class="shortcut">Ctrl+Y</span></div>
+        <div class="menu-sep"></div>
+        <div class="menu-dropdown-item" onclick="document.execCommand('copy')">Copy <span class="shortcut">Ctrl+C</span></div>
+        <div class="menu-dropdown-item" onclick="document.execCommand('paste')">Paste <span class="shortcut">Ctrl+V</span></div>
+        <div class="menu-dropdown-item" onclick="document.execCommand('selectAll')">Select All <span class="shortcut">Ctrl+A</span></div>
+        <div class="menu-sep"></div>
+        <div class="menu-dropdown-item" onclick="openFindBar()">Find <span class="shortcut">Ctrl+F</span></div>
+      </div>
+    </div>
+    <div class="menu-item" onclick="toggleMenu(this)">View
+      <div class="menu-dropdown">
+        <div class="menu-dropdown-item" onclick="toggleTerminal()">Terminal <span class="shortcut">Ctrl+`</span></div>
+        <div class="menu-dropdown-item" onclick="toggleSidebar()">Toggle Sidebar <span class="shortcut">Ctrl+B</span></div>
+        <div class="menu-sep"></div>
+        <div class="menu-dropdown-item" onclick="setActivity('explorer')">Explorer</div>
+        <div class="menu-dropdown-item" onclick="setActivity('search')">Search</div>
+      </div>
+    </div>
+    <div class="menu-item" onclick="toggleMenu(this)">Help
+      <div class="menu-dropdown">
+        <div class="menu-dropdown-item" onclick="window.open('https://yallcode.github.io/YallCode/','_blank')">YallCode Website</div>
+        <div class="menu-dropdown-item">About YSCode</div>
+      </div>
+    </div>
+  </nav>
+  <div id="titlebar-title">YSCode – YallStudio Code</div>
 </div>
 
-<!-- MAIN APP -->
-<div id="app">
+<!-- MAIN WORKBENCH -->
+<div id="workbench">
 
   <!-- ACTIVITY BAR -->
-  <div id="activitybar">
-    <div class="act-btn active" onclick="setActivity('explorer')" id="act-explorer" title="Explorer">
-      📁<span class="tooltip">Explorer</span>
+  <div id="activity-bar">
+    <div class="activity-btn active" id="act-explorer" title="Explorer" onclick="setActivity('explorer')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="8" rx="1"/><rect x="14" y="15" width="7" height="6" rx="1"/></svg>
     </div>
-    <div class="act-btn" onclick="setActivity('search')" id="act-search" title="Search">
-      🔍<span class="tooltip">Search</span>
+    <div class="activity-btn" id="act-search" title="Search" onclick="setActivity('search')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
     </div>
-    <div class="act-btn" onclick="setActivity('git')" id="act-git" title="Source Control">
-      🌿<span class="tooltip">Source Control</span>
-    </div>
-    <div class="act-btn" onclick="setActivity('run')" id="act-run" title="Run & Debug">
-      ▶️<span class="tooltip">Run & Debug</span>
-    </div>
-    <div class="act-btn" onclick="setActivity('extensions')" id="act-ext" title="Extensions">
-      🧩<span class="tooltip">Extensions</span>
+    <div class="activity-btn" id="act-git" title="Source Control" onclick="setActivity('git')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="9" r="2"/><line x1="6" y1="8" x2="6" y2="16"/><path d="M6 8c0 0 6-2 12 0"/></svg>
     </div>
     <div class="spacer"></div>
-    <div class="act-btn" onclick="notify('Settings coming soon! 🤠')" title="Settings">
-      ⚙️<span class="tooltip">Settings</span>
-    </div>
-    <div class="act-btn" onclick="notify('Howdy, partner! 🤠')" title="Account">
-      👤<span class="tooltip">Account</span>
+    <div class="activity-btn" id="act-settings" title="Settings" onclick="openSettings()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v2m0 16v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M2 12h2m16 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
     </div>
   </div>
 
   <!-- SIDEBAR -->
   <div id="sidebar">
-    <!-- EXPLORER -->
-    <div id="panel-explorer">
-      <div class="sidebar-header">
-        EXPLORER
-        <div>
-          <button class="icon-btn" onclick="newFile()" title="New File">+</button>
-          <button class="icon-btn" onclick="newFolder()" title="New Folder">📁</button>
-          <button class="icon-btn" onclick="refreshTree()" title="Refresh">↻</button>
+
+    <!-- EXPLORER PANEL -->
+    <div class="sidebar-panel active" id="panel-explorer">
+      <div id="sidebar-header">
+        <span>Explorer</span>
+        <div class="sidebar-actions">
+          <div class="sidebar-icon-btn" title="New File" onclick="newFileInFolder()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+          </div>
+          <div class="sidebar-icon-btn" title="New Folder" onclick="newFolderInTree()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+          </div>
+          <div class="sidebar-icon-btn" title="Open Folder" onclick="openFolder()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <div class="sidebar-icon-btn" title="Refresh" onclick="refreshTree()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          </div>
         </div>
       </div>
-      <div id="file-tree"></div>
+      <div id="file-tree">
+        <div class="tree-empty">
+          <div>No folder opened.</div>
+          <div style="margin-top:4px">Open a folder to explore your files.</div>
+          <div class="open-btn" onclick="openFolder()">Open Folder</div>
+        </div>
+      </div>
     </div>
-    <!-- SEARCH -->
-    <div id="panel-search" style="display:none">
-      <div class="sidebar-header">SEARCH</div>
-      <div style="padding:10px">
+
+    <!-- SEARCH PANEL -->
+    <div class="sidebar-panel" id="panel-search">
+      <div id="sidebar-header" style="justify-content:flex-start">
+        <span>Search</span>
+      </div>
+      <div id="search-panel">
         <div class="search-input-wrap">
-          <span>🔍</span>
-          <input type="text" placeholder="Search files..." id="search-input" oninput="doSearch(this.value)">
+          <input type="text" id="search-input" placeholder="Search in files…" oninput="doSearch(this.value)" />
         </div>
-        <div class="search-results" id="search-results">Type to search...</div>
+        <div id="search-results"></div>
       </div>
     </div>
-    <!-- GIT -->
-    <div id="panel-git" style="display:none">
-      <div class="sidebar-header">SOURCE CONTROL</div>
-      <div style="padding:12px;font-size:12px;color:var(--text-dim)">
-        <div style="color:var(--accent3);margin-bottom:8px">✓ No pending changes</div>
-        <div style="color:var(--text-dim);font-size:11px">Branch: <span style="color:var(--accent)">main</span></div>
-        <div style="margin-top:12px;font-size:11px">Last commit: <span style="color:var(--text)">init YSCode 🤠</span></div>
+
+    <!-- GIT PANEL -->
+    <div class="sidebar-panel" id="panel-git">
+      <div id="sidebar-header" style="justify-content:flex-start">
+        <span>Source Control</span>
       </div>
+      <div style="padding:16px;font-size:12px;color:var(--text-dim)">No repository detected in the current folder.</div>
     </div>
-    <!-- RUN -->
-    <div id="panel-run" style="display:none">
-      <div class="sidebar-header">RUN & DEBUG</div>
-      <div style="padding:12px;font-size:12px;color:var(--text-dim)">
-        <button onclick="runCode()" style="background:var(--accent);color:#000;border:none;padding:8px 16px;border-radius:4px;font-family:'Syne',sans-serif;font-weight:700;cursor:pointer;font-size:12px;width:100%">▶ Run Code</button>
-        <div style="margin-top:12px;font-size:11px;color:var(--text-dim)">No debug config set</div>
-      </div>
-    </div>
-    <!-- EXTENSIONS -->
-    <div id="panel-extensions" style="display:none">
-      <div class="sidebar-header">EXTENSIONS</div>
-      <div style="padding:8px">
-        <div class="tree-item" onclick="notify('Installing YeeHaw Theme... 🤠')">🎨 YeeHaw Theme</div>
-        <div class="tree-item" onclick="notify('Installing Prettier... ✨')">✨ Prettier</div>
-        <div class="tree-item" onclick="notify('Installing ESLint... 🔍')">🔍 ESLint</div>
-        <div class="tree-item" onclick="notify('Installing Git Lens... 🌿')">🌿 GitLens</div>
-        <div class="tree-item" onclick="notify('Installing Auto Import... 📦')">📦 Auto Import</div>
-        <div class="tree-item" onclick="notify('Installing Copilot... 🤖')">🤖 YSCopilot AI</div>
-      </div>
-    </div>
+
   </div>
 
-  <div class="resizer" id="resizer-sidebar"></div>
+  <!-- SIDEBAR RESIZER -->
+  <div id="sidebar-resizer"></div>
 
-  <!-- EDITOR + PANEL -->
+  <!-- EDITOR AREA -->
   <div id="editor-area">
-    <!-- TABS -->
-    <div id="tabs"></div>
+    <div id="tabs-bar"></div>
 
-    <!-- BREADCRUMB -->
-    <div id="breadcrumb">
-      <span>YSCode</span>
-      <span class="bc-sep">›</span>
-      <span>src</span>
-      <span class="bc-sep">›</span>
-      <span class="bc-current" id="bc-file">welcome</span>
-    </div>
-
-    <!-- WELCOME or EDITOR WRAPPER -->
-    <div id="welcome" style="display:flex">
-      <div class="welcome-logo"><span>YS</span>Code</div>
-      <div class="welcome-sub">YallStudioCode — Code like a cowboy 🤠</div>
-      <div class="welcome-actions">
-        <button class="welcome-btn" onclick="openFile('index.html')">📄 New File</button>
-        <button class="welcome-btn" onclick="openFile('app.js')">📂 Open Folder</button>
-        <button class="welcome-btn" onclick="openFile('README.md')">📖 README</button>
-        <button class="welcome-btn" onclick="openFile('package.json')">📦 package.json</button>
-      </div>
-    </div>
-
-    <div id="editor-wrapper" style="display:none; flex:1; overflow:hidden;">
-      <div id="line-numbers"></div>
-      <textarea id="editor" spellcheck="false"
-        oninput="onEditorInput()"
-        onkeydown="onEditorKeydown(event)"
-        onclick="updateCursor()"
-        onkeyup="updateCursor()"
-        onscroll="syncScroll()"
-      ></textarea>
-      <div id="minimap"></div>
-    </div>
-
-    <!-- BOTTOM PANEL -->
-    <div id="panel">
-      <div class="panel-tabs">
-        <div class="panel-tab active" onclick="switchPanel('terminal')">TERMINAL</div>
-        <div class="panel-tab" onclick="switchPanel('problems')">PROBLEMS <span id="prob-count" style="background:var(--accent2);color:white;border-radius:8px;padding:0 5px;font-size:10px;margin-left:4px">0</span></div>
-        <div class="panel-tab" onclick="switchPanel('output')">OUTPUT</div>
-        <div style="margin-left:auto;padding-right:8px">
-          <button style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:14px" onclick="togglePanel()">✕</button>
+    <div id="editors-container">
+      <!-- Welcome screen -->
+      <div id="welcome">
+        <div class="welcome-logo">
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none"><rect width="64" height="64" rx="12" fill="rgba(240,165,0,0.1)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="36" font-family="Syne,sans-serif" font-weight="800" fill="#f0a500">YS</text></svg>
+        </div>
+        <h2><span>YS</span>Code</h2>
+        <p>YallStudio Code — A powerful web-based editor</p>
+        <div class="shortcuts">
+          <div class="shortcut-row"><kbd>Ctrl+N</kbd> New File</div>
+          <div class="shortcut-row"><kbd>Ctrl+K O</kbd> Open Folder</div>
+          <div class="shortcut-row"><kbd>Ctrl+`</kbd> Toggle Terminal</div>
+          <div class="shortcut-row"><kbd>Ctrl+B</kbd> Toggle Sidebar</div>
         </div>
       </div>
-      <div id="terminal"></div>
-      <div id="term-input-line">
-        <span class="term-input-prompt">ysc@YallStudioCode:~$</span>
-        <input type="text" id="term-input" placeholder="Type a command..." onkeydown="handleTermInput(event)" autocomplete="off">
+    </div>
+
+    <!-- TERMINAL -->
+    <div id="terminal-panel">
+      <div id="terminal-header">
+        <div class="terminal-tab active">TERMINAL</div>
+        <div class="terminal-tab">PROBLEMS</div>
+        <div class="terminal-tab">OUTPUT</div>
+        <div id="terminal-close" onclick="toggleTerminal()">✕</div>
+      </div>
+      <div id="terminal-output"><span style="color:var(--accent4)">YSCode Terminal v1.0.0</span><br><span style="color:var(--text-dim)">Web-based terminal — type 'help' for commands</span><br><br></div>
+      <div id="terminal-input-row">
+        <span id="terminal-prompt">user@yscode:~$</span>
+        <input type="text" id="terminal-input" placeholder="Enter command…" spellcheck="false" onkeydown="handleTerminalKey(event)" />
       </div>
     </div>
   </div>
-
 </div>
 
 <!-- STATUS BAR -->
 <div id="statusbar">
-  <div class="status-item" onclick="notify('Branch: main ✓')">🌿 main</div>
-  <div class="status-item" id="status-errors" onclick="switchPanel('problems')">⚠️ 0 errors</div>
-  <div class="status-item status-right">
-    <span id="status-lang">HTML</span>
+  <div class="status-item" onclick="setActivity('git')">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="9" r="2"/><line x1="6" y1="8" x2="6" y2="16"/><path d="M6 8c0 0 6-2 12 0"/></svg>
+    main
   </div>
-  <div class="status-item">
-    <span id="status-cursor">Ln 1, Col 1</span>
-  </div>
-  <div class="status-item">
-    <span>UTF-8</span>
-  </div>
-  <div class="status-item">
-    <span>CRLF</span>
-  </div>
-  <div class="status-item" onclick="notify('YSCode v1.0.0 — Yeehaw! 🤠')">
-    YSCode v1.0.0
+  <div class="status-item" id="status-file">No file open</div>
+  <div class="spacer"></div>
+  <div class="status-right">
+    <div class="status-item" id="status-cursor">Ln 1, Col 1</div>
+    <div class="status-item" id="status-lang">Plain Text</div>
+    <div class="status-item" onclick="window.open('https://yallcode.github.io/YallCode/','_blank')">YallCode ↗</div>
   </div>
 </div>
 
 <!-- CONTEXT MENU -->
 <div id="ctx-menu">
-  <div class="ctx-item" onclick="ctxAction('cut')">✂️ Cut <span class="key">⌘X</span></div>
-  <div class="ctx-item" onclick="ctxAction('copy')">📋 Copy <span class="key">⌘C</span></div>
-  <div class="ctx-item" onclick="ctxAction('paste')">📌 Paste <span class="key">⌘V</span></div>
+  <div class="ctx-item" id="ctx-open">Open</div>
+  <div class="ctx-item" id="ctx-rename">Rename</div>
+  <div class="ctx-item" id="ctx-delete">Delete</div>
   <div class="ctx-sep"></div>
-  <div class="ctx-item" onclick="ctxAction('format')">✨ Format Document</div>
-  <div class="ctx-item" onclick="ctxAction('comment')">💬 Toggle Comment</div>
-  <div class="ctx-sep"></div>
-  <div class="ctx-item" onclick="ctxAction('rename')">✏️ Rename Symbol</div>
-  <div class="ctx-item" onclick="ctxAction('find')">🔍 Find References</div>
+  <div class="ctx-item" onclick="newFileInFolder()">New File</div>
+  <div class="ctx-item" onclick="newFolderInTree()">New Folder</div>
 </div>
 
-<!-- NOTIFICATIONS -->
-<div id="notif"></div>
+<!-- MODAL -->
+<div id="modal-overlay">
+  <div id="modal">
+    <h3 id="modal-title">New File</h3>
+    <input type="text" id="modal-input" placeholder="filename.js" />
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" id="modal-confirm">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- HIDDEN FILE INPUT -->
+<input type="file" id="file-input" style="display:none" webkitdirectory multiple />
+<input type="file" id="single-file-input" style="display:none" multiple />
 
 <script>
-// ===================== STATE =====================
+// ───────── STATE ─────────
 const state = {
-  files: {},
-  activeFile: null,
+  files: {},          // path -> {name, content, dirty, lang}
+  folders: {},        // path -> {name, children: [path], isFolder}
+  rootPath: null,
   openTabs: [],
-  termHistory: [],
-  termHistIdx: -1,
-  panelVisible: true,
+  activeTab: null,
+  currentActivity: 'explorer',
+  sidebarVisible: true,
+  terminalVisible: false,
+  contextTarget: null,
 };
 
-const DEFAULT_FILES = {
-  'index.html': `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>My App</title>\n  <link rel="stylesheet" href="style.css">\n</head>\n<body>\n  <h1>Hello, World! 🤠</h1>\n  <p>Welcome to YallStudioCode.</p>\n  <script src="app.js"><\/script>\n</body>\n</html>`,
-  'style.css': `/* === YSCode Styles === */\n\nbody {\n  font-family: 'Syne', sans-serif;\n  background: #0f0f10;\n  color: #d4d4d8;\n  margin: 0;\n  padding: 40px;\n}\n\nh1 {\n  color: #f5a623;\n  font-size: 2.5rem;\n}\n\np {\n  color: #71717a;\n  margin-top: 12px;\n}`,
-  'app.js': `// === app.js ===\n\nconsole.log('YSCode is alive! 🤠');\n\nconst greet = (name) => {\n  return \`Howdy, \${name}! Welcome to YallStudioCode.\`;\n};\n\ndocument.addEventListener('DOMContentLoaded', () => {\n  console.log(greet('partner'));\n  const h1 = document.querySelector('h1');\n  if (h1) h1.addEventListener('click', () => {\n    alert('Yeehaw! 🤠');\n  });\n});`,
-  'README.md': `# YallStudioCode (YSCode)\n\n> Code like a cowboy 🤠\n\n## Features\n\n- Syntax highlighting\n- Multi-tab editing\n- Integrated terminal\n- File explorer\n- Git integration\n- Extensions marketplace\n\n## Getting Started\n\n\`\`\`bash\n# Open a project\nysc open my-project\n\n# Run code\nysc run\n\`\`\`\n\n## License\n\nMIT — Yee-haw!`,
-  'package.json': `{\n  "name": "my-yscode-project",\n  "version": "1.0.0",\n  "description": "Built with YallStudioCode 🤠",\n  "main": "app.js",\n  "scripts": {\n    "start": "node app.js",\n    "dev": "nodemon app.js",\n    "build": "webpack --mode production",\n    "test": "jest"\n  },\n  "keywords": ["yscode", "yeehaw"],\n  "author": "A Cowboy Coder",\n  "license": "MIT",\n  "dependencies": {}\n}`,
-  'config.yml': `# YSCode Configuration\nyscode:\n  version: 1.0.0\n  theme: yee-haw-dark\n  font: JetBrains Mono\n  fontSize: 13\n  tabSize: 2\n  wordWrap: off\n  minimap: true\n  terminal:\n    shell: /bin/bash\n    fontSize: 12`,
+// ───────── LANGUAGE DETECTION ─────────
+const langMap = {
+  js: 'JavaScript', ts: 'TypeScript', jsx: 'React JSX', tsx: 'React TSX',
+  html: 'HTML', css: 'CSS', scss: 'SCSS', json: 'JSON',
+  py: 'Python', md: 'Markdown', txt: 'Plain Text', sh: 'Shell',
+  yaml: 'YAML', yml: 'YAML', xml: 'XML', c: 'C', cpp: 'C++',
+  java: 'Java', rs: 'Rust', go: 'Go', php: 'PHP', rb: 'Ruby',
 };
-
-// Copy files to state
-Object.assign(state.files, DEFAULT_FILES);
-
-// ===================== FILE ICONS =====================
-function getIcon(filename) {
-  const ext = filename.split('.').pop().toLowerCase();
-  const icons = {
-    html: '🌐', css: '🎨', js: '🟨', ts: '🔷', jsx: '⚛️', tsx: '⚛️',
-    json: '📦', md: '📖', yml: '⚙️', yaml: '⚙️', py: '🐍',
-    rs: '🦀', go: '🐹', java: '☕', cpp: '⚙️', c: '⚙️',
-    sh: '💻', txt: '📄', png: '🖼️', jpg: '🖼️', svg: '🎨',
-    gif: '🖼️', mp4: '🎬', mp3: '🎵',
-  };
-  return icons[ext] || '📄';
+const iconMap = {
+  js: '🟨', ts: '🔷', jsx: '⚛️', tsx: '⚛️', html: '🌐', css: '🎨',
+  scss: '🎨', json: '📋', py: '🐍', md: '📝', txt: '📄', sh: '💲',
+  yaml: '⚙️', yml: '⚙️', xml: '📰', c: '🔵', cpp: '🔵',
+  java: '☕', rs: '🦀', go: '🐹', php: '🐘', rb: '💎',
+};
+function getLang(name) {
+  const ext = (name.split('.').pop() || '').toLowerCase();
+  return langMap[ext] || 'Plain Text';
+}
+function getIcon(name) {
+  const ext = (name.split('.').pop() || '').toLowerCase();
+  return iconMap[ext] || '📄';
 }
 
-function getLang(filename) {
-  const ext = filename.split('.').pop().toLowerCase();
-  const langs = {
-    html: 'HTML', css: 'CSS', js: 'JavaScript', ts: 'TypeScript',
-    jsx: 'JSX', tsx: 'TSX', json: 'JSON', md: 'Markdown',
-    yml: 'YAML', yaml: 'YAML', py: 'Python', rs: 'Rust',
-    go: 'Go', java: 'Java', sh: 'Shell', txt: 'Plain Text',
-  };
-  return langs[ext] || 'Plain Text';
+// ───────── OPEN FOLDER ─────────
+function openFolder() {
+  document.getElementById('file-input').click();
 }
+document.getElementById('file-input').addEventListener('change', async function(e) {
+  const files = Array.from(e.target.files);
+  if (!files.length) return;
+  state.files = {}; state.folders = {}; state.rootPath = null;
+  state.openTabs = []; state.activeTab = null;
+  renderTabs(); renderWelcome();
 
-// ===================== FILE TREE =====================
-function buildTree() {
+  // Build tree structure
+  const rootParts = files[0].webkitRelativePath.split('/');
+  const rootName = rootParts[0];
+  state.rootPath = rootName;
+  state.folders[rootName] = { name: rootName, children: [], isFolder: true, depth: 0 };
+
+  for (const file of files) {
+    const parts = file.webkitRelativePath.split('/');
+    const filePath = file.webkitRelativePath;
+
+    // Ensure all parent folders exist
+    for (let i = 1; i < parts.length; i++) {
+      const folderPath = parts.slice(0, i).join('/');
+      const parentPath = parts.slice(0, i - 1).join('/') || rootName;
+      if (!state.folders[folderPath] && i < parts.length - 1) {
+        state.folders[folderPath] = { name: parts[i - 1], children: [], isFolder: true, depth: i - 1 };
+        const parent = state.folders[parentPath];
+        if (parent && !parent.children.includes(folderPath)) parent.children.push(folderPath);
+      }
+    }
+
+    // Add file
+    const parentPath = parts.slice(0, -1).join('/');
+    const parent = state.folders[parentPath];
+    if (parent && !parent.children.includes(filePath)) parent.children.push(filePath);
+
+    state.files[filePath] = {
+      name: parts[parts.length - 1],
+      content: null, // lazy load
+      dirty: false,
+      lang: getLang(parts[parts.length - 1]),
+      fileObj: file,
+    };
+  }
+
+  renderTree();
+  updateTitlebar(rootName);
+  this.value = '';
+});
+
+// ───────── TREE RENDERING ─────────
+function renderTree() {
   const tree = document.getElementById('file-tree');
+  if (!state.rootPath) {
+    tree.innerHTML = `<div class="tree-empty"><div>No folder opened.</div><div style="margin-top:4px">Open a folder to explore your files.</div><div class="open-btn" onclick="openFolder()">Open Folder</div></div>`;
+    return;
+  }
   tree.innerHTML = '';
+  renderNode(state.rootPath, tree, 0, true);
+}
 
-  // Folder header
-  const folder = document.createElement('div');
-  folder.className = 'tree-item tree-folder open';
-  folder.innerHTML = `<span class="arrow">▶</span> 📁 <span>YSCode Project</span>`;
-  folder.onclick = function() {
-    this.classList.toggle('open');
-    [...tree.querySelectorAll('.tree-file')].forEach(f => {
-      f.style.display = this.classList.contains('open') ? '' : 'none';
+function renderNode(path, container, depth, isRoot) {
+  const node = state.folders[path] || state.files[path];
+  if (!node) return;
+
+  const isFolder = !!state.folders[path];
+  const el = document.createElement('div');
+  const indent = depth * 12;
+
+  if (isFolder) {
+    const isOpen = el.dataset.open !== 'false';
+    el.className = 'tree-folder';
+    el.style.paddingLeft = `${8 + indent}px`;
+    el.innerHTML = `<span class="tree-icon">${isRoot ? '📂' : (el.dataset.open ? '📂' : '📁')}</span><span class="tree-name">${node.name}</span>`;
+    if (isRoot) el.dataset.open = 'true';
+    el.dataset.path = path;
+    el.dataset.open = isRoot ? 'true' : 'false';
+
+    const childContainer = document.createElement('div');
+    childContainer.className = 'tree-children' + (isRoot ? ' open' : '');
+    childContainer.dataset.parent = path;
+
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = el.dataset.open === 'true';
+      el.dataset.open = open ? 'false' : 'true';
+      el.querySelector('.tree-icon').textContent = (!open) ? '📂' : '📁';
+      childContainer.classList.toggle('open', !open);
     });
-  };
-  tree.appendChild(folder);
+    el.addEventListener('contextmenu', (e) => showCtxMenu(e, path, true));
 
-  Object.keys(state.files).forEach(name => {
-    const item = document.createElement('div');
-    item.className = 'tree-item tree-file' + (state.activeFile === name ? ' active' : '');
-    item.dataset.file = name;
-    item.innerHTML = `<span class="fi">${getIcon(name)}</span> ${name}`;
-    item.onclick = () => openFile(name);
-    item.oncontextmenu = (e) => { e.preventDefault(); showCtxMenu(e, name); };
-    tree.appendChild(item);
-  });
+    container.appendChild(el);
+    container.appendChild(childContainer);
+
+    // Sort children: folders first, then files
+    const children = (node.children || []).slice().sort((a, b) => {
+      const aIsFolder = !!state.folders[a];
+      const bIsFolder = !!state.folders[b];
+      if (aIsFolder !== bIsFolder) return aIsFolder ? -1 : 1;
+      return (state.folders[a] || state.files[a]).name.localeCompare((state.folders[b] || state.files[b]).name);
+    });
+
+    for (const child of children) renderNode(child, childContainer, depth + 1, false);
+  } else {
+    el.className = 'tree-file';
+    el.style.paddingLeft = `${8 + indent}px`;
+    const icon = getIcon(node.name);
+    el.innerHTML = `<span class="tree-icon">${icon}</span><span class="tree-name">${node.name}</span>`;
+    el.dataset.path = path;
+    if (state.activeTab === path) el.classList.add('active');
+
+    el.addEventListener('click', () => openFile(path));
+    el.addEventListener('contextmenu', (e) => showCtxMenu(e, path, false));
+    container.appendChild(el);
+  }
 }
 
-function refreshTree() {
-  buildTree();
-  notify('File tree refreshed ↻');
+// ───────── OPEN FILE ─────────
+async function openFile(path) {
+  const file = state.files[path];
+  if (!file) return;
+
+  // Update active tree item
+  document.querySelectorAll('.tree-file').forEach(el => el.classList.remove('active'));
+  const treeEl = document.querySelector(`.tree-file[data-path="${CSS.escape(path)}"]`);
+  if (treeEl) treeEl.classList.add('active');
+
+  // Add tab if not already open
+  if (!state.openTabs.includes(path)) state.openTabs.push(path);
+  state.activeTab = path;
+
+  // Lazy load content
+  if (file.content === null && file.fileObj) {
+    file.content = await file.fileObj.text();
+  }
+
+  renderTabs();
+  renderEditor(path);
+  updateStatus(path);
 }
 
-// ===================== TABS =====================
-function buildTabs() {
-  const tabsEl = document.getElementById('tabs');
-  tabsEl.innerHTML = '';
-  state.openTabs.forEach(name => {
+// ───────── TABS ─────────
+function renderTabs() {
+  const bar = document.getElementById('tabs-bar');
+  bar.innerHTML = '';
+  for (const path of state.openTabs) {
+    const file = state.files[path];
+    if (!file) continue;
     const tab = document.createElement('div');
-    tab.className = 'tab' + (state.activeFile === name ? ' active' : '');
-    tab.dataset.file = name;
+    tab.className = 'tab' + (path === state.activeTab ? ' active' : '');
     tab.innerHTML = `
-      <span class="tab-icon">${getIcon(name)}</span>
-      <span>${name}</span>
-      <span class="close" onclick="closeTab(event,'${name}')">✕</span>
+      <span class="tab-icon">${getIcon(file.name)}</span>
+      <span class="tab-name">${file.name}</span>
+      ${file.dirty ? '<span class="tab-dirty"></span>' : ''}
+      <span class="tab-close" onclick="closeTabByPath(event,'${CSS.escape(path)}')">✕</span>
     `;
-    tab.onclick = (e) => { if (!e.target.classList.contains('close')) openFile(name); };
-    tabsEl.appendChild(tab);
-  });
-  // New tab button
-  const newTab = document.createElement('div');
-  newTab.className = 'tab-new';
-  newTab.title = 'New File';
-  newTab.textContent = '+';
-  newTab.onclick = newFile;
-  tabsEl.appendChild(newTab);
-}
-
-// ===================== EDITOR =====================
-function openFile(name) {
-  // Show editor, hide welcome
-  document.getElementById('welcome').style.display = 'none';
-  document.getElementById('editor-wrapper').style.display = 'flex';
-
-  if (!state.files[name]) {
-    state.files[name] = `// New file: ${name}\n`;
+    tab.addEventListener('click', () => switchTab(path));
+    bar.appendChild(tab);
   }
-
-  state.activeFile = name;
-  if (!state.openTabs.includes(name)) state.openTabs.push(name);
-
-  const editor = document.getElementById('editor');
-  editor.value = state.files[name];
-
-  buildTabs();
-  buildTree();
-  updateLineNumbers();
-  updateMinimap();
-  updateCursor();
-  document.getElementById('bc-file').textContent = name;
-  document.getElementById('status-lang').textContent = getLang(name);
-  document.getElementById('title-center').textContent = `YallStudioCode — ${name}`;
-  editor.focus();
+  if (state.openTabs.length === 0) renderWelcome();
 }
 
-function closeTab(e, name) {
+function switchTab(path) {
+  state.activeTab = path;
+  renderTabs();
+  renderEditor(path);
+  updateStatus(path);
+}
+
+function closeTabByPath(e, path) {
   e.stopPropagation();
-  const idx = state.openTabs.indexOf(name);
+  const realPath = path.replace(/\\(.)/g, '$1');
+  closeTabAt(realPath);
+}
+function closeTab() { if (state.activeTab) closeTabAt(state.activeTab); }
+function closeTabAt(path) {
+  const idx = state.openTabs.indexOf(path);
+  if (idx === -1) return;
   state.openTabs.splice(idx, 1);
-
-  if (state.activeFile === name) {
-    if (state.openTabs.length > 0) {
-      openFile(state.openTabs[Math.min(idx, state.openTabs.length - 1)]);
-    } else {
-      state.activeFile = null;
-      document.getElementById('welcome').style.display = 'flex';
-      document.getElementById('editor-wrapper').style.display = 'none';
-      document.getElementById('title-center').textContent = 'YallStudioCode — ysc.workspace';
-    }
+  if (state.activeTab === path) {
+    state.activeTab = state.openTabs[idx] || state.openTabs[idx - 1] || null;
   }
-  buildTabs();
-  buildTree();
+  // Remove editor pane
+  const pane = document.getElementById('pane-' + btoa(unescape(encodeURIComponent(path))).replace(/[^a-zA-Z0-9]/g,''));
+  if (pane) pane.remove();
+  renderTabs();
+  if (state.activeTab) renderEditor(state.activeTab);
+  else renderWelcome();
 }
 
-function onEditorInput() {
-  if (!state.activeFile) return;
-  state.files[state.activeFile] = document.getElementById('editor').value;
-  updateLineNumbers();
-  updateMinimap();
-  checkProblems();
+// ───────── EDITOR RENDERING ─────────
+function renderWelcome() {
+  document.getElementById('welcome').style.display = 'flex';
+  document.querySelectorAll('.editor-pane').forEach(p => p.classList.remove('visible'));
 }
 
-function onEditorKeydown(e) {
-  const editor = document.getElementById('editor');
+function paneId(path) {
+  return 'pane-' + btoa(unescape(encodeURIComponent(path))).replace(/[^a-zA-Z0-9]/g,'').substring(0,20);
+}
 
-  // TAB key
-  if (e.key === 'Tab') {
-    e.preventDefault();
-    const start = editor.selectionStart;
-    const end = editor.selectionEnd;
-    editor.value = editor.value.substring(0, start) + '  ' + editor.value.substring(end);
-    editor.selectionStart = editor.selectionEnd = start + 2;
-    onEditorInput();
+function renderEditor(path) {
+  const file = state.files[path];
+  if (!file) return;
+  document.getElementById('welcome').style.display = 'none';
+  document.querySelectorAll('.editor-pane').forEach(p => p.classList.remove('visible'));
+
+  const pid = paneId(path);
+  let pane = document.getElementById(pid);
+  if (!pane) {
+    pane = document.createElement('div');
+    pane.className = 'editor-pane';
+    pane.id = pid;
+
+    const breadcrumb = document.createElement('div');
+    breadcrumb.className = 'editor-breadcrumb';
+    breadcrumb.innerHTML = `<span style="color:var(--text-dim)">${state.rootPath || ''}</span><span class="breadcrumb-sep"> › </span><span style="color:var(--accent3)">${file.name}</span>`;
+
+    const inner = document.createElement('div');
+    inner.className = 'editor-inner';
+
+    const lineNums = document.createElement('div');
+    lineNums.className = 'line-numbers';
+
+    const textarea = document.createElement('textarea');
+    textarea.className = 'code-area';
+    textarea.spellcheck = false;
+    textarea.value = file.content || '';
+    updateLineNumbers(lineNums, textarea.value);
+
+    textarea.addEventListener('input', () => {
+      file.content = textarea.value;
+      file.dirty = true;
+      updateLineNumbers(lineNums, textarea.value);
+      renderTabs();
+    });
+    textarea.addEventListener('keydown', (e) => handleEditorKey(e, textarea, path));
+    textarea.addEventListener('click', () => updateCursor(textarea));
+    textarea.addEventListener('keyup', () => updateCursor(textarea));
+    textarea.addEventListener('scroll', () => { lineNums.scrollTop = textarea.scrollTop; });
+
+    inner.appendChild(lineNums);
+    inner.appendChild(textarea);
+    pane.appendChild(breadcrumb);
+    pane.appendChild(inner);
+    document.getElementById('editors-container').appendChild(pane);
   }
 
-  // SAVE
-  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-    e.preventDefault();
-    saveFile();
-  }
-
-  // Auto-close brackets
-  const pairs = { '(': ')', '[': ']', '{': '}', '"': '"', "'": "'" };
-  if (pairs[e.key]) {
-    const start = editor.selectionStart;
-    const end = editor.selectionEnd;
-    if (start === end) {
-      e.preventDefault();
-      const v = editor.value;
-      editor.value = v.substring(0, start) + e.key + pairs[e.key] + v.substring(end);
-      editor.selectionStart = editor.selectionEnd = start + 1;
-      onEditorInput();
-    }
-  }
+  pane.classList.add('visible');
+  const ta = pane.querySelector('.code-area');
+  if (ta) setTimeout(() => { ta.focus(); updateCursor(ta); }, 50);
 }
 
-function updateLineNumbers() {
-  const editor = document.getElementById('editor');
-  const lines = editor.value.split('\n');
-  const ln = document.getElementById('line-numbers');
-  ln.innerHTML = lines.map((_, i) => `<div>${i + 1}</div>`).join('');
-
-  // Sync scroll
-  ln.scrollTop = editor.scrollTop;
+function updateLineNumbers(el, text) {
+  const lines = text.split('\n').length;
+  el.textContent = Array.from({length: lines}, (_, i) => i + 1).join('\n');
 }
 
-function syncScroll() {
-  const editor = document.getElementById('editor');
-  document.getElementById('line-numbers').scrollTop = editor.scrollTop;
-}
-
-function updateMinimap() {
-  const editor = document.getElementById('editor');
-  document.getElementById('minimap').textContent = editor.value;
-}
-
-function updateCursor() {
-  const editor = document.getElementById('editor');
-  const val = editor.value.substring(0, editor.selectionStart);
-  const lines = val.split('\n');
+function updateCursor(ta) {
+  const text = ta.value.substring(0, ta.selectionStart);
+  const lines = text.split('\n');
   const ln = lines.length;
   const col = lines[lines.length - 1].length + 1;
   document.getElementById('status-cursor').textContent = `Ln ${ln}, Col ${col}`;
 }
 
+function updateStatus(path) {
+  const file = state.files[path];
+  if (!file) return;
+  document.getElementById('status-file').textContent = file.name;
+  document.getElementById('status-lang').textContent = file.lang;
+}
+
+// ───────── KEYBOARD SHORTCUTS ─────────
+function handleEditorKey(e, ta, path) {
+  if (e.ctrlKey && e.key === 's') { e.preventDefault(); saveFile(); return; }
+  if (e.ctrlKey && e.key === 'w') { e.preventDefault(); closeTab(); return; }
+
+  // Tab key -> indent with 2 spaces
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    ta.value = ta.value.substring(0, start) + '  ' + ta.value.substring(end);
+    ta.selectionStart = ta.selectionEnd = start + 2;
+    state.files[path].content = ta.value;
+    state.files[path].dirty = true;
+    const ln = ta.closest('.editor-pane').querySelector('.line-numbers');
+    if (ln) updateLineNumbers(ln, ta.value);
+    renderTabs();
+  }
+
+  // Auto-close brackets
+  const pairs = {'(':')', '[':']', '{':'}', '"':'"', "'":"'"};
+  if (pairs[e.key]) {
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    if (start === end) {
+      e.preventDefault();
+      const open = e.key, close = pairs[e.key];
+      ta.value = ta.value.substring(0, start) + open + close + ta.value.substring(end);
+      ta.selectionStart = ta.selectionEnd = start + 1;
+      state.files[path].content = ta.value;
+    }
+  }
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.ctrlKey && e.key === 'n') { e.preventDefault(); newFile(); }
+  if (e.ctrlKey && e.key === 'b') { e.preventDefault(); toggleSidebar(); }
+  if (e.ctrlKey && e.key === '`') { e.preventDefault(); toggleTerminal(); }
+  if (e.ctrlKey && e.key === 'w') { e.preventDefault(); closeTab(); }
+  if (e.ctrlKey && e.key === 's') { e.preventDefault(); saveFile(); }
+  if (e.key === 'Escape') { closeCtxMenu(); closeModal(); closeAllMenus(); }
+});
+
+// ───────── SAVE FILE ─────────
 function saveFile() {
-  if (!state.activeFile) return;
-  notify(`✓ Saved ${state.activeFile}`);
-  // Flash the tab
-  const tab = document.querySelector(`.tab[data-file="${state.activeFile}"]`);
-  if (tab) {
-    tab.style.borderBottomColor = 'var(--accent3)';
-    setTimeout(() => { tab.style.borderBottomColor = ''; }, 600);
-  }
+  if (!state.activeTab) { newFile(); return; }
+  const file = state.files[state.activeTab];
+  if (!file) return;
+  const blob = new Blob([file.content || ''], {type: 'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = file.name;
+  a.click();
+  file.dirty = false;
+  renderTabs();
+  showToast(`Saved: ${file.name}`);
 }
 
-// ===================== PROBLEMS =====================
-function checkProblems() {
-  let count = 0;
-  if (state.activeFile) {
-    const val = state.files[state.activeFile];
-    // Naive checks
-    const unclosed = (val.match(/\{/g) || []).length - (val.match(/\}/g) || []).length;
-    if (unclosed !== 0) count++;
-    const unclosedP = (val.match(/\(/g) || []).length - (val.match(/\)/g) || []).length;
-    if (unclosedP !== 0) count++;
-  }
-  document.getElementById('prob-count').textContent = count;
-  document.getElementById('status-errors').innerHTML = `⚠️ ${count} errors`;
+function saveFileAs() {
+  showModalPrompt('Save As', state.activeTab ? state.files[state.activeTab]?.name : 'untitled.txt', (name) => {
+    if (!state.activeTab) return;
+    const file = state.files[state.activeTab];
+    const blob = new Blob([file.content || ''], {type: 'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    a.click();
+    file.dirty = false;
+    renderTabs();
+  });
 }
 
-// ===================== TERMINAL =====================
-const termOutputs = {
-  'ls': () => Object.keys(state.files).join('  '),
-  'pwd': () => '/home/cowboy/YSCode',
-  'whoami': () => 'cowboy',
-  'date': () => new Date().toString(),
-  'node -v': () => 'v20.11.0',
-  'npm -v': () => '10.2.4',
-  'git status': () => 'On branch main\nnothing to commit, working tree clean',
-  'git log --oneline': () => 'a1b2c3d init YSCode 🤠\nb2c3d4e add styles\nc3d4e5f initial commit',
-  'clear': () => { document.getElementById('terminal').innerHTML = ''; return null; },
-  'help': () => 'Available commands: ls, pwd, whoami, date, node -v, npm -v, git status, git log --oneline, clear, run, cat [file]',
-  'run': () => { runCode(); return '▶ Running...'; },
-  'yee': () => '🤠 HAW!',
-  'yeehaw': () => '🤠🤠🤠 YEEEE-HAWWW! 🤠🤠🤠',
+// ───────── NEW FILE ─────────
+function newFile() {
+  showModalPrompt('New File', 'untitled.txt', (name) => {
+    if (!name) return;
+    const path = (state.rootPath ? state.rootPath + '/' : '') + name;
+    state.files[path] = { name, content: '', dirty: false, lang: getLang(name), fileObj: null };
+    if (state.rootPath && state.folders[state.rootPath]) {
+      state.folders[state.rootPath].children.push(path);
+    }
+    renderTree();
+    openFile(path);
+  });
+}
+function newFileInFolder() { newFile(); }
+
+function newFolderInTree() {
+  showModalPrompt('New Folder', 'new-folder', (name) => {
+    if (!name || !state.rootPath) return;
+    const path = state.rootPath + '/' + name;
+    state.folders[path] = { name, children: [], isFolder: true, depth: 1 };
+    state.folders[state.rootPath].children.push(path);
+    renderTree();
+  });
+}
+
+// ───────── SINGLE FILE OPEN (drag/drop) ─────────
+document.getElementById('single-file-input').addEventListener('change', async function(e) {
+  for (const file of e.target.files) {
+    const path = file.name;
+    state.files[path] = {
+      name: file.name, content: await file.text(),
+      dirty: false, lang: getLang(file.name), fileObj: null,
+    };
+    openFile(path);
+  }
+  this.value = '';
+});
+
+// Drag & drop files onto editor
+document.getElementById('editors-container').addEventListener('dragover', e => e.preventDefault());
+document.getElementById('editors-container').addEventListener('drop', async e => {
+  e.preventDefault();
+  for (const file of e.dataTransfer.files) {
+    const path = file.name;
+    state.files[path] = {
+      name: file.name, content: await file.text(),
+      dirty: false, lang: getLang(file.name), fileObj: null,
+    };
+    openFile(path);
+  }
+});
+
+// ───────── ACTIVITY SWITCHING ─────────
+function setActivity(name) {
+  closeAllMenus();
+  state.currentActivity = name;
+  document.querySelectorAll('.activity-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('act-' + name)?.classList.add('active');
+  document.querySelectorAll('.sidebar-panel').forEach(p => p.classList.remove('active'));
+  const panel = document.getElementById('panel-' + name);
+  if (panel) panel.classList.add('active');
+  if (!state.sidebarVisible) toggleSidebar();
+}
+
+function toggleSidebar() {
+  state.sidebarVisible = !state.sidebarVisible;
+  document.getElementById('sidebar').style.display = state.sidebarVisible ? '' : 'none';
+  document.getElementById('sidebar-resizer').style.display = state.sidebarVisible ? '' : 'none';
+}
+
+// ───────── TERMINAL ─────────
+function toggleTerminal() {
+  state.terminalVisible = !state.terminalVisible;
+  document.getElementById('terminal-panel').classList.toggle('visible', state.terminalVisible);
+  if (state.terminalVisible) document.getElementById('terminal-input').focus();
+}
+
+const termHistory = [];
+let termHistIdx = -1;
+
+const termCommands = {
+  help: () => `Available commands:\n  clear       – clear terminal\n  ls          – list open files\n  pwd         – print working directory\n  echo [text] – print text\n  date        – show current date/time\n  about       – about YSCode`,
+  clear: () => { document.getElementById('terminal-output').innerHTML = ''; return null; },
+  ls: () => Object.values(state.files).map(f => f.name).join('  ') || '(no files open)',
+  pwd: () => state.rootPath ? '/' + state.rootPath : '/home/user',
+  date: () => new Date().toString(),
+  about: () => 'YSCode v1.0.0 — YallStudio Code\nMade for the community ❤️\nhttps://yallcode.github.io/YallCode/',
 };
 
-function termPrint(html, cls = '') {
-  const term = document.getElementById('terminal');
-  const line = document.createElement('div');
-  line.className = `term-line ${cls}`;
-  line.innerHTML = html;
-  term.appendChild(line);
-  term.scrollTop = term.scrollHeight;
-}
-
-function handleTermInput(e) {
-  const input = document.getElementById('term-input');
-
-  if (e.key === 'ArrowUp') {
-    e.preventDefault();
-    if (state.termHistIdx < state.termHistory.length - 1) {
-      state.termHistIdx++;
-      input.value = state.termHistory[state.termHistory.length - 1 - state.termHistIdx];
-    }
-    return;
-  }
-  if (e.key === 'ArrowDown') {
-    e.preventDefault();
-    if (state.termHistIdx > 0) {
-      state.termHistIdx--;
-      input.value = state.termHistory[state.termHistory.length - 1 - state.termHistIdx];
+function handleTerminalKey(e) {
+  const input = document.getElementById('terminal-input');
+  if (e.key === 'Enter') {
+    const cmd = input.value.trim();
+    if (!cmd) return;
+    termHistory.unshift(cmd); termHistIdx = -1;
+    const out = document.getElementById('terminal-output');
+    out.innerHTML += `<span style="color:var(--accent4)">$</span> <span style="color:var(--text-bright)">${escHtml(cmd)}</span>\n`;
+    const parts = cmd.split(' ');
+    const fn = termCommands[parts[0]];
+    if (fn) {
+      const res = fn(parts.slice(1).join(' '));
+      if (res !== null && res !== undefined) out.innerHTML += escHtml(res) + '\n';
+    } else if (parts[0] === 'echo') {
+      out.innerHTML += escHtml(parts.slice(1).join(' ')) + '\n';
     } else {
-      state.termHistIdx = -1;
-      input.value = '';
+      out.innerHTML += `<span style="color:var(--accent2)">Command not found: ${escHtml(parts[0])}</span>\n`;
     }
-    return;
-  }
-
-  if (e.key !== 'Enter') return;
-
-  const cmd = input.value.trim();
-  input.value = '';
-  state.termHistIdx = -1;
-
-  if (!cmd) return;
-
-  state.termHistory.push(cmd);
-
-  termPrint(`<span class="term-prompt">ysc@YallStudioCode</span>:<span class="term-path">~/YSCode</span>$ <span style="color:var(--text-bright)">${cmd}</span>`);
-
-  // Handle cat command
-  if (cmd.startsWith('cat ')) {
-    const fname = cmd.slice(4).trim();
-    if (state.files[fname]) {
-      termPrint(`<pre style="color:var(--text-dim);font-size:11px;white-space:pre-wrap">${escHtml(state.files[fname])}</pre>`);
-    } else {
-      termPrint(`cat: ${fname}: No such file or directory`, 'term-error');
-    }
-    return;
-  }
-
-  // Handle echo
-  if (cmd.startsWith('echo ')) {
-    termPrint(escHtml(cmd.slice(5)), 'term-output');
-    return;
-  }
-
-  const handler = termOutputs[cmd.toLowerCase()];
-  if (handler) {
-    const out = handler();
-    if (out !== null && out !== undefined) {
-      termPrint(`<span class="term-output" style="white-space:pre-wrap">${escHtml(out)}</span>`);
-    }
-  } else {
-    termPrint(`<span class="term-error">ysc: command not found: ${escHtml(cmd)}</span><span class="term-output"> — Try 'help'</span>`);
+    out.innerHTML += '\n';
+    out.scrollTop = out.scrollHeight;
+    input.value = '';
+  } else if (e.key === 'ArrowUp') {
+    termHistIdx = Math.min(termHistIdx + 1, termHistory.length - 1);
+    input.value = termHistory[termHistIdx] || '';
+  } else if (e.key === 'ArrowDown') {
+    termHistIdx = Math.max(termHistIdx - 1, -1);
+    input.value = termHistIdx >= 0 ? termHistory[termHistIdx] : '';
   }
 }
 
-function escHtml(str) {
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-function switchPanel(name) {
-  document.querySelectorAll('.panel-tab').forEach((t,i) => {
-    t.classList.toggle('active', ['terminal','problems','output'][i] === name);
-  });
-  if (name === 'terminal') {
-    document.getElementById('term-input').focus();
-  }
-}
-
-function togglePanel() {
-  const panel = document.getElementById('panel');
-  state.panelVisible = !state.panelVisible;
-  panel.style.display = state.panelVisible ? '' : 'none';
-}
-
-function runCode() {
-  switchPanel('terminal');
-  termPrint(`<span class="term-prompt">ysc@YallStudioCode</span>:<span class="term-path">~/YSCode</span>$ <span style="color:var(--text-bright)">ysc run</span>`);
-  termPrint(`<span style="color:var(--accent3)">▶ Running ${state.activeFile || 'project'}...</span>`);
-  setTimeout(() => termPrint(`<span class="term-output">YSCode is alive! 🤠</span>`), 300);
-  setTimeout(() => termPrint(`<span class="term-output">Howdy, partner! Welcome to YallStudioCode.</span>`), 600);
-  setTimeout(() => termPrint(`<span style="color:var(--accent3)">✓ Process exited with code 0</span>`), 900);
-}
-
-// ===================== ACTIVITY BAR =====================
-function setActivity(name) {
-  const map = { explorer: 'act-explorer', search: 'act-search', git: 'act-git', run: 'act-run', extensions: 'act-ext' };
-  const panelMap = { explorer: 'panel-explorer', search: 'panel-search', git: 'panel-git', run: 'panel-run', extensions: 'panel-extensions' };
-
-  document.querySelectorAll('.act-btn').forEach(b => b.classList.remove('active'));
-  Object.values(panelMap).forEach(p => { const el = document.getElementById(p); if(el) el.style.display = 'none'; });
-
-  document.getElementById(map[name])?.classList.add('active');
-  const panel = document.getElementById(panelMap[name]);
-  if (panel) panel.style.display = '';
-
-  if (name === 'run') runCode();
-}
-
-// ===================== SEARCH =====================
+// ───────── SEARCH ─────────
 function doSearch(query) {
   const results = document.getElementById('search-results');
-  if (!query) { results.textContent = 'Type to search...'; return; }
-  let found = [];
-  Object.entries(state.files).forEach(([name, content]) => {
-    const lines = content.split('\n');
-    lines.forEach((line, idx) => {
-      if (line.toLowerCase().includes(query.toLowerCase())) {
-        found.push(`<div class="tree-item" onclick="openFile('${name}')" style="font-size:11px">
-          ${getIcon(name)} <b>${name}</b>:${idx+1} — <span style="color:var(--text-dim)">${escHtml(line.trim().substring(0,40))}</span>
-        </div>`);
+  results.innerHTML = '';
+  if (!query.trim()) return;
+  const q = query.toLowerCase();
+  let found = 0;
+  for (const [path, file] of Object.entries(state.files)) {
+    if (!file.content) continue;
+    const lines = file.content.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].toLowerCase().includes(q)) {
+        const div = document.createElement('div');
+        div.className = 'search-result';
+        const hl = lines[i].replace(new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'gi'), m => `<mark>${escHtml(m)}</mark>`);
+        div.innerHTML = `<div class="file-name">${escHtml(file.name)}:${i+1}</div><div class="match">${hl}</div>`;
+        div.addEventListener('click', () => { openFile(path); setActivity('explorer'); });
+        results.appendChild(div);
+        if (++found >= 50) return;
       }
-    });
-  });
-  results.innerHTML = found.length ? found.join('') : `<div style="color:var(--text-dim)">No results for "${escHtml(query)}"</div>`;
-}
-
-// ===================== NEW FILE / FOLDER =====================
-function newFile() {
-  const name = prompt('New file name:', 'untitled.js');
-  if (!name) return;
-  state.files[name] = `// ${name}\n`;
-  buildTree();
-  openFile(name);
-  notify(`Created ${name}`);
-}
-
-function newFolder() {
-  notify('Folder support coming soon! 🤠');
-}
-
-// ===================== CONTEXT MENU =====================
-let ctxTargetFile = null;
-
-function showCtxMenu(e, file) {
-  ctxTargetFile = file;
-  const menu = document.getElementById('ctx-menu');
-  menu.style.display = 'block';
-  menu.style.left = e.clientX + 'px';
-  menu.style.top = e.clientY + 'px';
-}
-
-document.addEventListener('click', () => {
-  document.getElementById('ctx-menu').style.display = 'none';
-});
-
-function ctxAction(action) {
-  const editor = document.getElementById('editor');
-  if (action === 'cut') document.execCommand('cut');
-  else if (action === 'copy') document.execCommand('copy');
-  else if (action === 'paste') document.execCommand('paste');
-  else if (action === 'format') { formatDocument(); }
-  else if (action === 'comment') { toggleComment(); }
-  else if (action === 'rename') {
-    const name = prompt('Rename to:', state.activeFile);
-    if (name && name !== state.activeFile) {
-      state.files[name] = state.files[state.activeFile];
-      delete state.files[state.activeFile];
-      const idx = state.openTabs.indexOf(state.activeFile);
-      if (idx !== -1) state.openTabs[idx] = name;
-      state.activeFile = name;
-      buildTree();
-      buildTabs();
-      notify(`Renamed to ${name}`);
     }
   }
-  else if (action === 'find') notify('Find references: feature coming soon!');
+  if (!found) results.innerHTML = '<div style="padding:8px;font-size:11px;color:var(--text-dim)">No results found.</div>';
 }
 
-function formatDocument() {
-  notify('✨ Document formatted');
-}
-
-function toggleComment() {
-  const editor = document.getElementById('editor');
-  const start = editor.selectionStart;
-  const lineStart = editor.value.lastIndexOf('\n', start - 1) + 1;
-  const line = editor.value.substring(lineStart);
-  const firstLine = line.split('\n')[0];
-  const trimmed = firstLine.trimStart();
-  const isComment = trimmed.startsWith('//');
-  const newLine = isComment ? firstLine.replace(/^(\s*)\/\/\s?/, '$1') : firstLine.replace(/^(\s*)/, '$1// ');
-  editor.value = editor.value.substring(0, lineStart) + newLine + editor.value.substring(lineStart + firstLine.length);
-  onEditorInput();
-  notify('💬 Comment toggled');
-}
-
-// ===================== MENU ACTIONS =====================
-function menuAction(menu) {
-  const actions = {
-    file: () => {
-      const choice = ['New File', 'Open File', 'Save', 'Save All', 'Close Editor'];
-      notify('File menu: ' + choice[Math.floor(Math.random()*choice.length)]);
-    },
-    edit: () => notify('Edit menu opened'),
-    view: () => notify('Toggle: Sidebar / Panel / Minimap'),
-    run: () => runCode(),
-    terminal: () => { togglePanel(); notify('Terminal toggled'); },
-    help: () => notify('YallStudioCode v1.0.0 🤠 — Ride into the code!'),
+// ───────── CONTEXT MENU ─────────
+function showCtxMenu(e, path, isFolder) {
+  e.preventDefault();
+  state.contextTarget = path;
+  const menu = document.getElementById('ctx-menu');
+  document.getElementById('ctx-open').style.display = isFolder ? 'none' : '';
+  menu.style.display = 'block';
+  menu.style.left = Math.min(e.clientX, window.innerWidth - 180) + 'px';
+  menu.style.top = Math.min(e.clientY, window.innerHeight - 180) + 'px';
+  document.getElementById('ctx-open').onclick = () => { openFile(path); closeCtxMenu(); };
+  document.getElementById('ctx-rename').onclick = () => {
+    const node = state.files[path] || state.folders[path];
+    showModalPrompt('Rename', node.name, (name) => {
+      if (name) { node.name = name; renderTree(); }
+    });
+    closeCtxMenu();
   };
-  actions[menu]?.();
+  document.getElementById('ctx-delete').onclick = () => {
+    if (state.files[path]) {
+      delete state.files[path];
+      closeTabAt(path);
+    } else {
+      delete state.folders[path];
+    }
+    renderTree();
+    closeCtxMenu();
+  };
 }
+function closeCtxMenu() { document.getElementById('ctx-menu').style.display = 'none'; }
+document.addEventListener('click', closeCtxMenu);
 
-// ===================== NOTIFICATIONS =====================
-function notify(msg) {
-  const notif = document.getElementById('notif');
-  const item = document.createElement('div');
-  item.className = 'notif-item';
-  item.textContent = msg;
-  notif.appendChild(item);
-  setTimeout(() => {
-    item.style.opacity = '0';
-    item.style.transform = 'translateX(100%)';
-    item.style.transition = 'all .3s';
-    setTimeout(() => item.remove(), 300);
-  }, 2500);
+// ───────── MODAL ─────────
+let modalCallback = null;
+function showModalPrompt(title, placeholder, cb) {
+  document.getElementById('modal-title').textContent = title;
+  const input = document.getElementById('modal-input');
+  input.placeholder = placeholder;
+  input.value = placeholder;
+  document.getElementById('modal-overlay').classList.add('visible');
+  modalCallback = cb;
+  setTimeout(() => { input.focus(); input.select(); }, 50);
+  document.getElementById('modal-confirm').onclick = () => {
+    if (modalCallback) modalCallback(input.value.trim());
+    closeModal();
+  };
+  input.onkeydown = (e) => { if (e.key === 'Enter') document.getElementById('modal-confirm').click(); };
 }
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('visible');
+  modalCallback = null;
+}
+document.getElementById('modal-overlay').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
 
-// ===================== SIDEBAR RESIZE =====================
-const resizer = document.getElementById('resizer-sidebar');
+// ───────── MENU ─────────
+function toggleMenu(el) { el.classList.toggle('open'); }
+function closeAllMenus() { document.querySelectorAll('.menu-item.open').forEach(m => m.classList.remove('open')); }
+document.addEventListener('click', (e) => { if (!e.target.closest('.menu-item')) closeAllMenus(); });
+
+// ───────── SIDEBAR RESIZER ─────────
+const resizer = document.getElementById('sidebar-resizer');
 let isResizing = false;
-resizer.addEventListener('mousedown', e => {
-  isResizing = true;
-  document.body.style.cursor = 'col-resize';
-});
-document.addEventListener('mousemove', e => {
+resizer.addEventListener('mousedown', () => isResizing = true);
+document.addEventListener('mousemove', (e) => {
   if (!isResizing) return;
   const sidebar = document.getElementById('sidebar');
-  const actbar = document.getElementById('activitybar');
-  const newW = e.clientX - actbar.offsetWidth - 4;
-  if (newW > 100 && newW < 400) sidebar.style.width = newW + 'px';
+  const newWidth = e.clientX - 48;
+  if (newWidth > 100 && newWidth < 500) sidebar.style.width = newWidth + 'px';
 });
-document.addEventListener('mouseup', () => {
-  isResizing = false;
-  document.body.style.cursor = '';
-});
+document.addEventListener('mouseup', () => isResizing = false);
 
-// ===================== INIT =====================
-buildTree();
-buildTabs();
+// ───────── TITLE BAR ─────────
+function updateTitlebar(name) {
+  document.getElementById('titlebar-title').textContent = `${name} — YSCode`;
+}
 
-// Initial terminal welcome
-termPrint(`<span style="color:var(--accent);font-family:'Syne',sans-serif;font-weight:700">YallStudioCode Terminal</span> <span style="color:var(--text-dim)">v1.0.0 🤠</span>`);
-termPrint(`<span class="term-output">Type 'help' for available commands</span>`);
-termPrint(``);
+// ───────── SETTINGS (stub) ─────────
+function openSettings() {
+  const path = '__settings__';
+  state.files[path] = {
+    name: 'settings.json', content: JSON.stringify({
+      "editor.fontSize": 13,
+      "editor.tabSize": 2,
+      "editor.fontFamily": "JetBrains Mono",
+      "editor.lineNumbers": true,
+      "workbench.colorTheme": "YSCode Dark",
+      "terminal.integrated.shell": "web",
+    }, null, 2),
+    dirty: false, lang: 'JSON', fileObj: null,
+  };
+  openFile(path);
+}
 
-// Open first file by default
-openFile('index.html');
+function openFindBar() {
+  setActivity('search');
+  setTimeout(() => document.getElementById('search-input').focus(), 100);
+}
 
-// Keyboard shortcuts
-document.addEventListener('keydown', e => {
-  if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveFile(); }
-  if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
-    e.preventDefault();
-    const name = prompt('Open file:', Object.keys(state.files).join(', '));
-    if (name && state.files[name]) openFile(name);
+function refreshTree() { renderTree(); }
+
+// ───────── TOAST ─────────
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.style.cssText = 'position:fixed;bottom:32px;right:16px;background:var(--bg-panel);border:1px solid var(--border);color:var(--text-bright);padding:8px 16px;border-radius:6px;font-size:12px;z-index:9999;opacity:0;transition:opacity 0.2s;font-family:var(--font-ui);pointer-events:none;';
+    document.body.appendChild(t);
   }
-  if ((e.ctrlKey || e.metaKey) && e.key === '`') {
-    e.preventDefault();
-    togglePanel();
-  }
-  if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
-    e.preventDefault();
-    newFile();
-  }
-});
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.style.opacity = '0', 2000);
+}
+
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ───────── INIT ─────────
+renderTree();
 </script>
 </body>
 </html>
